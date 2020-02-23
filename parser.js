@@ -37,7 +37,7 @@ const parse = (source, ts) => {
   const skipType = pred => value =>
     pred(value)
       ? ts.next()
-      : error(`Expected '${char}' but got '${ts.peek().value}'`);
+      : error(`Expected '${value}' but got '${ts.peek().value}'`);
 
   const skipPunc = skipType(isPunc);
   const skipKw = skipType(isKw);
