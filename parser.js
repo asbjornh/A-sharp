@@ -13,6 +13,7 @@ const precedence = {
   "|>": 40, ">>": 40
 };
 
+// TODO: end loc
 const parse = (source, ts) => {
   const error = msg => {
     const token = ts.peek();

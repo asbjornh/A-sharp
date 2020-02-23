@@ -10,13 +10,18 @@ const catchWithNode = (node, fn) => {
   }
 };
 
+const throwWithNode = (node, msg) => {
+  const error = new Error(msg);
+  error.node = node;
+  throw error;
+};
+
 const getIdName = node => {
   if (!node.type === "id") {
-    const error = new Error(
+    throwWithNode(
+      node,
       `Type error: Cannot assign to node of type '${node.type}'`
     );
-    error.node = node;
-    throw error;
   }
   return node.value;
 };
@@ -41,14 +46,28 @@ module.exports = function evaluate(node, env) {
   const num = node => catchWithNode(node, () => assertNum(node));
   const nonZero = node => catchWithNode(node, () => assertNonZero(node));
 
-  const evalBinary = (left, right, operator) => {
+  const evalBinary = node => {
+    const { left, right, operator } = node;
     if (operator === "/" || operator === "%")
       return global.eval(`${num(left)} ${operator} ${nonZero(right)}`);
     if (operator === "==") return eval(left) === eval(right);
     if (operator === "!=") return eval(left) !== eval(right);
-    if (operator === "|>") throw Error("Implement pipeline");
+    if (operator === "|>") {
+      const fn = catchWithNode(node.right.callee, () => assertFunc(right));
+      return fn(left);
+    }
     if (operator === ">>") throw Error("Implement composition");
     return global.eval(`${num(left)} ${operator} ${num(right)}`);
+  };
+
+  const applyFunc = (node, args, scope) => {
+    if (args.length < node.args.length) {
+      return (...moreArgs) => applyFunc(node, [...args, ...moreArgs], scope);
+    } else if (args.length > node.args.length) {
+      throwWithNode(args.slice(-1)[0], "Too many arguments");
+    }
+    args.forEach((arg, index) => scope.set(node.args[index].value, eval(arg)));
+    return evaluate(node.body, scope);
   };
 
   switch (node.type) {
@@ -65,18 +84,12 @@ module.exports = function evaluate(node, env) {
         env.set(getIdName(node.left), eval(node.right))
       );
     case "binary":
-      return evalBinary(node.left, node.right, node.operator, env);
+      return evalBinary(node);
     case "call":
       const fn = catchWithNode(node.callee, () => assertFunc(node.callee));
-      return fn(...node.args.map(eval));
+      return fn(...node.args);
     case "fun":
-      return (...args) => {
-        const fnScope = env.extend();
-        node.args.forEach((node, index) => {
-          fnScope.set(node.value, args[index]);
-        });
-        return evaluate(node.body, fnScope);
-      };
+      return (...args) => applyFunc(node, args, env.extend());
     case "ternary":
       return eval(node.condition) ? eval(node.then) : eval(node.else);
     case "if":

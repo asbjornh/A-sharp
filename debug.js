@@ -6,12 +6,9 @@ const parser = require("./parser");
 const eval = require("./eval");
 
 const source = `
-let fib n =
-  if n == 0 then 0
-  else if n == 1 then 1
-  else (fib (n - 1)) + (fib (n - 2));
-
-fib 10;
+let div b a = a / b;
+let add a b = a + b;
+10 |> div 2 |> add 2;
 `;
 
 const print = (label, thing) =>
@@ -28,5 +25,5 @@ const ast = parser(source);
 try {
   print("EVAL", eval(ast));
 } catch (e) {
-  error(e.message, source, e.node && e.node.loc);
+  error(e.message, source, e.node && e.node.loc, e.node && e.node.value);
 }
