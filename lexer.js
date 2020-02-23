@@ -1,6 +1,6 @@
 const codeFrame = require("./code-frame");
 
-const keywords = ["let", "true", "false"];
+const keywords = ["let", "true", "false", "if", "else", "then"];
 /* prettier-ignore */
 const operators = [
   "|>", ">>",

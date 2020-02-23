@@ -4,14 +4,17 @@ const catchWithNode = (node, fn) => {
   try {
     return fn();
   } catch (e) {
-    e.node = node;
+    // NOTE: Overwriting existing node creates misleading output
+    e.node = e.node || node;
     throw e;
   }
 };
 
 const getIdName = node => {
   if (!node.type === "id") {
-    const error = new Error(`Cannot assign to node of type '${node.type}'`);
+    const error = new Error(
+      `Type error: Cannot assign to node of type '${node.type}'`
+    );
     error.node = node;
     throw error;
   }
@@ -23,7 +26,8 @@ module.exports = function evaluate(node, env) {
 
   const assertType = type => node => {
     const value = eval(node);
-    if (typeof value !== type) throw Error(`Unexpeced ${typeof value}`);
+    if (typeof value !== type)
+      throw Error(`Type error: Expected '${type}' but got '${typeof value}'`);
     return value;
   };
   const assertNum = assertType("number");
@@ -47,6 +51,8 @@ module.exports = function evaluate(node, env) {
   };
 
   switch (node.type) {
+    case "unit":
+      return undefined;
     case "number":
     case "string":
     case "bool":
@@ -54,7 +60,7 @@ module.exports = function evaluate(node, env) {
     case "id":
       return catchWithNode(node, () => env.get(node.value));
     case "assign":
-      return catchWithNode(node, () =>
+      return catchWithNode(node.left, () =>
         env.set(getIdName(node.left), eval(node.right))
       );
     case "binary":
@@ -66,9 +72,7 @@ module.exports = function evaluate(node, env) {
       return (...args) => {
         const fnScope = env.extend();
         node.args.forEach((node, index) => {
-          catchWithNode(node, () => {
-            fnScope.set(node.value, args[index]);
-          });
+          fnScope.set(node.value, args[index]);
         });
         return evaluate(node.body, fnScope);
       };
@@ -77,5 +81,7 @@ module.exports = function evaluate(node, env) {
     case "program":
       const globalEnv = environment();
       return node.body.reduce((_, node) => evaluate(node, globalEnv), null);
+    default:
+      throw Error(`Missing implementation for '${node.type}'`);
   }
 };

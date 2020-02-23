@@ -33,10 +33,13 @@ const parse = (source, ts) => {
   const isParam = () =>
     isId() || isNum() || isStr() || isBool() || isArray() || isPunc("(");
 
-  const skipPunc = char =>
-    isPunc(char)
+  const skipType = pred => value =>
+    pred(value)
       ? ts.next()
       : error(`Expected '${char}' but got '${ts.peek().value}'`);
+
+  const skipPunc = skipType(isPunc);
+  const skipKw = skipType(isKw);
 
   const parseWhile = (pred, parser) => {
     let nodes = [];
@@ -79,6 +82,21 @@ const parse = (source, ts) => {
   const parseBlock = () => {
     const body = parseList("{", "}", ";", parseExpression);
     return body.length === 1 ? body : { type: "block", body };
+  };
+
+  const parseIf = () => {
+    skipKw("if");
+    const condition = parseExpression();
+    skipKw("then");
+    const thenBranch = parseExpression();
+    skipKw("else");
+    const elseBranch = parseExpression();
+    return {
+      type: "ternary",
+      condition,
+      then: thenBranch,
+      else: elseBranch
+    };
   };
 
   const maybeTernary = first => {
@@ -152,6 +170,7 @@ const parse = (source, ts) => {
     if (isPunc("(")) return parseParenthesized(parseExpression);
     if (isArray()) return parseArray();
     if (isKw("let")) return parseAssign();
+    if (isKw("if")) return parseIf();
     if (isBool()) return { type: "bool", value: ts.next().value === "true" };
     if (isNum()) return parseNum();
     if (isStr()) return ts.next();
