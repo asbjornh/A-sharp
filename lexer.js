@@ -15,6 +15,7 @@ const isNum = str => str && /^\d*\.?\d*$/.test(str);
 const isOp = str => str && operators.includes(str);
 const isPunc = str => str && punctuation.includes(str);
 const isString = str => str && /^".*"$/.test(str);
+const isComment = str => str && str.startsWith("//");
 
 const reducer = ([tokens, stack, line, col], char, index, input) => {
   const consumeStack = (type, value = stack) => {
@@ -23,8 +24,11 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
   };
 
   const next = () => [tokens, stack + char, line, col + 1];
+  const nextLine = () => [tokens, char, line + 1, 1];
   const skip = () => [tokens, char, line, col + 1];
 
+  if (isComment(stack)) return stack.endsWith("\n") ? nextLine() : next();
+  if (stack === "/" && char === "/") return next();
   if (isPunc(stack)) return consumeStack("punc");
   if (isKw(stack) && !isId(char)) return consumeStack("kw");
   if (isOp(stack)) return isOp(stack + char) ? next() : consumeStack("op");
@@ -35,7 +39,6 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
 
   // NOTE: If the stack holds any value when reaching the end of the line, the first character of the stack is invalid
   if (stack && char === "\n" && stack !== "\n") {
-    console.log(stack);
     const errCol = col - stack.length + 1;
     const cf = codeFrame(input.join(""), line, errCol, errCol + 1);
     const character = stack[0] === "\n" ? "newline" : `character '${stack[0]}'`;
@@ -43,7 +46,7 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
     process.exit(1);
   }
 
-  if (stack === "\n") return [tokens, char, line + 1, 1];
+  if (stack === "\n") return nextLine();
   if (stack === " ") return skip();
 
   return next();
