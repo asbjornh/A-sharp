@@ -1,8 +1,13 @@
 const codeFrame = require("./code-frame");
 
-const keywords = ["let", "true", "false", "?", ":"];
-const operators = ["<=", ">=", "<>", "<", ">", "=", "+", "-", "/", "%", "*"];
-const punctuation = "()[]{};";
+const keywords = ["let", "true", "false"];
+/* prettier-ignore */
+const operators = [
+  "|>", ">>",
+  "<=", ">=", "!=", "==", "||", "&&",
+  "<", ">", "=", "+", "-", "/", "%", "*"
+];
+const punctuation = "()[]{};?:";
 
 const isId = str => str && /^[a-zA-Z-]*$/.test(str);
 const isKw = str => str && keywords.includes(str);
@@ -17,9 +22,12 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
     return [tokens.concat({ type, value, loc }), char, line, col + 1];
   };
 
+  const next = () => [tokens, stack + char, line, col + 1];
+  const skip = () => [tokens, char, line, col + 1];
+
   if (isPunc(stack)) return consumeStack("punc");
   if (isKw(stack) && !isId(char)) return consumeStack("kw");
-  if (isOp(stack)) return consumeStack("op");
+  if (isOp(stack)) return isOp(stack + char) ? next() : consumeStack("op");
   if (isId(stack) && !isId(char)) return consumeStack("id");
   if (isNum(stack) && !isNum(char)) return consumeStack("number");
   if (isString(stack) && !isString(char))
@@ -34,9 +42,9 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
   }
 
   if (stack === "\n") return [tokens, char, line + 1, 1];
-  if (stack === " ") return [tokens, char, line, col + 1];
+  if (stack === " ") return skip();
 
-  return [tokens, stack + char, line, col + 1];
+  return next();
 };
 
 module.exports = source => {

@@ -4,15 +4,16 @@ const lexer = require("./lexer");
 const parser = require("./parser");
 
 const source = `
-let some-func a b = {
-  let newA = a * 2;
-  newA + b;
-};
-let res = some-func 1.5 2;
+let a = 1 |> add 2 |> multiply 3 |> sum
 `;
 
+const print = (label, thing) =>
+  console.log(label, util.inspect(thing, false, null, true));
+
 console.log("SOURCE", source);
+
 const tokens = lexer(source);
-console.log("TOKENS", tokens);
+print("TOKENS", tokens);
+
 const ast = parser(source);
-console.log("AST", util.inspect(ast, false, null, true));
+print("AST", ast);
