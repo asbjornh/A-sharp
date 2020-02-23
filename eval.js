@@ -54,19 +54,24 @@ module.exports = function evaluate(node, env) {
     if (operator === "!=") return eval(left) !== eval(right);
     if (operator === "|>") {
       const fn = catchWithNode(node.right.callee, () => assertFunc(right));
-      return fn(left);
+      return fn(eval(left));
     }
-    if (operator === ">>") throw Error("Implement composition");
+    if (operator === ">>") {
+      const l = catchWithNode(left.callee, () => assertFunc(left));
+      const r = catchWithNode(right.callee, () => assertFunc(right));
+      return (...args) => r(l(...args));
+    }
     return global.eval(`${num(left)} ${operator} ${num(right)}`);
   };
 
   const applyFunc = (node, args, scope) => {
     if (args.length < node.args.length) {
-      return (...moreArgs) => applyFunc(node, [...args, ...moreArgs], scope);
+      return (...moreArgs) =>
+        applyFunc(node, [...args, ...moreArgs], scope.extend());
     } else if (args.length > node.args.length) {
       throwWithNode(args.slice(-1)[0], "Too many arguments");
     }
-    args.forEach((arg, index) => scope.set(node.args[index].value, eval(arg)));
+    args.forEach((arg, index) => scope.set(node.args[index].value, arg));
     return evaluate(node.body, scope);
   };
 
@@ -89,7 +94,7 @@ module.exports = function evaluate(node, env) {
       return evalBinary(node);
     case "call":
       const fn = catchWithNode(node.callee, () => assertFunc(node.callee));
-      return fn(...node.args);
+      return fn(...node.args.map(eval));
     case "fun":
       return (...args) => applyFunc(node, args, env.extend());
     case "ternary":

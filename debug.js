@@ -8,7 +8,12 @@ const eval = require("./eval");
 const source = `
 let div b a = a / b;
 let add a b = a + b;
-10 |> div 2 |> add 2;
+let fn = div 2 >> add 2;
+
+let with-pipe = 10 |> div 2 |> add 2;
+let with-composition = fn 10;
+
+[ with-pipe with-composition (fn 10) ];
 `;
 
 const print = (label, thing) =>
