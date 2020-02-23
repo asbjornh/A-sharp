@@ -1,4 +1,4 @@
-const codeFrame = require("./code-frame");
+const throwError = require("./error");
 const lexer = require("./lexer");
 const stream = require("./stream");
 
@@ -16,11 +16,8 @@ const precedence = {
 const parse = (source, ts) => {
   const error = msg => {
     const token = ts.peek();
-    const { line, col } = token.loc;
-    const cf = codeFrame(source, line, col, col + token.value.length);
     const message = msg || `Unexpected token '${token.value}'.`;
-    console.error(`${cf}\n\n${message}`);
-    process.exit(1);
+    throwError(message, source, token.loc, token.value);
   };
 
   const is = (type, value, token = ts.peek()) =>
@@ -103,6 +100,7 @@ const parse = (source, ts) => {
   const maybeBinary = (left, leftPrec = 0) => {
     if (isOp()) {
       const tok = ts.peek();
+      if (isOp("=")) error();
       const rightPrec = precedence[tok.value];
       if (rightPrec > leftPrec) {
         ts.next();
@@ -122,6 +120,7 @@ const parse = (source, ts) => {
   const parseCall = callee => ({
     type: "call",
     callee,
+    loc: callee.loc,
     args: parseWhile(isParam, parseAtom)
   });
 
@@ -131,7 +130,7 @@ const parse = (source, ts) => {
   };
 
   const parseExpression = () =>
-    maybeCall(() => maybeBinary(maybeTernary(maybeCall(parseAtom))));
+    maybeCall(() => maybeTernary(maybeBinary(maybeCall(parseAtom))));
 
   const parseAssign = () => {
     ts.next();
@@ -155,6 +154,7 @@ const parse = (source, ts) => {
     if (isKw("let")) return parseAssign();
     if (isBool()) return { type: "bool", value: ts.next().value === "true" };
     if (isNum()) return parseNum();
+    if (isStr()) return ts.next();
     if (isId()) return ts.next();
     error();
   };

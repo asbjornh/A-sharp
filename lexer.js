@@ -34,10 +34,12 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
     return consumeStack("string", stack.replace(/"/g, ""));
 
   // NOTE: If the stack holds any value when reaching the end of the line, the first character of the stack is invalid
-  if (stack && char === "\n") {
+  if (stack && char === "\n" && stack !== "\n") {
+    console.log(stack);
     const errCol = col - stack.length + 1;
     const cf = codeFrame(input.join(""), line, errCol, errCol + 1);
-    console.error(`${cf}\n\nParse error: Unexpected character '${stack[0]}'`);
+    const character = stack[0] === "\n" ? "newline" : `character '${stack[0]}'`;
+    console.error(`${cf}\n\nParse error: Unexpected ${character}`);
     process.exit(1);
   }
 
