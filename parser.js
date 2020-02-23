@@ -76,7 +76,7 @@ const parse = (source, ts) => {
 
   const parseArray = () => {
     const { loc } = ts.peek();
-    const elements = parseList("[", "]", null, parseExpression);
+    const elements = parseList("[", "]", null, parseAtom);
     return { type: "array", elements, loc };
   };
 

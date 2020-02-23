@@ -77,6 +77,8 @@ module.exports = function evaluate(node, env) {
     case "string":
     case "bool":
       return node.value;
+    case "array":
+      return node.elements.map(eval);
     case "id":
       return catchWithNode(node, () => env.get(node.value));
     case "assign":
