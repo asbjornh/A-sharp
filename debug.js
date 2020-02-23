@@ -26,8 +26,7 @@ const ast = parser(source);
 // print("AST", ast);
 
 try {
-  const result = eval(ast);
-  print("EVAL", result);
+  print("EVAL", eval(ast));
 } catch (e) {
   error(e.message, source, e.node && e.node.loc);
 }

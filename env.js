@@ -10,13 +10,13 @@ module.exports = function environment(parent) {
 
   const get = name => {
     const scope = lookup(name);
-    if (!scope) throw new Error(`Undefined variable '${name}'`);
+    if (!scope) throw new Error(`Variable '${name}' is not defined.`);
     if (scope === env) return vars[name];
     return scope.get(name);
   };
 
   const set = (name, value) => {
-    if (name in vars) throw new Error(`Cannot reassign '${name}'`);
+    if (name in vars) throw new Error(`Cannot reassign '${name}'.`);
     vars[name] = value;
   };
 

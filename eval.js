@@ -31,6 +31,7 @@ module.exports = function evaluate(node, env) {
     return value;
   };
   const assertNum = assertType("number");
+  const assertFunc = assertType("function");
 
   const assertNonZero = node => {
     const num = assertNum(node);
@@ -66,7 +67,7 @@ module.exports = function evaluate(node, env) {
     case "binary":
       return evalBinary(node.left, node.right, node.operator, env);
     case "call":
-      const fn = eval(node.callee);
+      const fn = catchWithNode(node.callee, () => assertFunc(node.callee));
       return fn(...node.args.map(eval));
     case "fun":
       return (...args) => {
