@@ -78,6 +78,8 @@ module.exports = function evaluate(node, env) {
       };
     case "ternary":
       return eval(node.condition) ? eval(node.then) : eval(node.else);
+    case "if":
+      return eval(node.condition) ? eval(node.then) : eval(node.else);
     case "program":
       const globalEnv = environment();
       return node.body.reduce((_, node) => evaluate(node, globalEnv), null);

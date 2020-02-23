@@ -92,7 +92,7 @@ const parse = (source, ts) => {
     skipKw("else");
     const elseBranch = parseExpression();
     return {
-      type: "ternary",
+      type: "if",
       condition,
       then: thenBranch,
       else: elseBranch
