@@ -1,6 +1,6 @@
 const util = require("util");
 
-const error = require("./error");
+const error = require("./util/error");
 const lexer = require("./lexer");
 const parser = require("./parser");
 const eval = require("./eval");

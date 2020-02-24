@@ -1,4 +1,4 @@
-const codeFrame = require("./code-frame");
+const codeFrame = require("./util/code-frame");
 
 const keywords = ["let", "true", "false", "if", "else", "then"];
 /* prettier-ignore */
@@ -39,6 +39,7 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
   if (isString(stack) && !isString(char))
     return consumeStack("string", stack.replace(/"/g, ""));
 
+  // TODO: Use error util
   // NOTE: If the stack holds any value when reaching the end of the line, the first character of the stack is invalid
   if (stack && char === "\n" && stack !== "\n") {
     const errCol = col - stack.length + 1;

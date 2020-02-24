@@ -1,6 +1,6 @@
-const throwError = require("./error");
+const throwError = require("./util/error");
 const lexer = require("./lexer");
-const stream = require("./stream");
+const stream = require("./util/stream");
 
 /* prettier-ignore */
 const precedence = {
