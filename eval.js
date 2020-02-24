@@ -89,12 +89,11 @@ module.exports = function evaluate(node, env) {
   const evalDestructuring = (left, right) => {
     const names = catchWithNode(left, () => assertArray(left));
     const values = catchWithNode(right, () => assertArray(right));
-    console.log("destructure", values);
     if (names.length > values.length + 1)
       throwWithNode(right, `Input array too short`);
-    names.reduce((acc, name) => {
+    names.reduce((acc, name, i) => {
       const [value, ...rest] = acc;
-      env.set(name, rest.length > 0 ? value : [value]);
+      env.set(name, i < names.length - 1 ? value : value ? [value] : []);
       return rest;
     }, values);
   };
