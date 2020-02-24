@@ -72,7 +72,9 @@ module.exports = function evaluate(node, env) {
       const r = catchWithNode(right.callee, () => assertFunc(right));
       return (...args) => r(l(...args));
     }
-    return global.eval(`${num(left)} ${operator} ${num(right)}`);
+    if (["||", "&&", "<", ">", "+", "-", "*", "/", "%"].includes(operator))
+      return global.eval(`${num(left)} ${operator} ${num(right)}`);
+    throwWithNode(right, `Unexpected operator '${operator}'`);
   };
 
   const applyFunc = (node, args, scope) => {
