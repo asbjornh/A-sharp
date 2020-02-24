@@ -10,6 +10,7 @@ const precedence = {
   "<": 7, ">": 7, "<=": 7, ">=": 7, "==": 7, "!=": 7,
   "+": 10, "-": 10,
   "*": 20, "/": 20, "%": 20,
+  "::": 20,
   "|>": 40, ">>": 40
 };
 
@@ -41,6 +42,7 @@ const parse = (source, ts) => {
 
   const skipPunc = skipType(isPunc);
   const skipKw = skipType(isKw);
+  const skipOp = skipType(isOp);
 
   const parseWhile = (pred, parser) => {
     let nodes = [];
@@ -59,14 +61,14 @@ const parse = (source, ts) => {
     return node;
   };
 
-  const parseList = (start, stop, sep, parser) => {
+  const parseList = (start, stop, sepSkipper, parser) => {
     let expressions = [];
     let first = true;
     skipPunc(start);
     while (!ts.eof()) {
       if (isPunc(stop)) break;
       if (first) first = false;
-      else if (sep) skipPunc(sep);
+      else if (sepSkipper) sepSkipper();
       if (isPunc(stop)) break;
       expressions.push(parser());
     }
@@ -81,7 +83,7 @@ const parse = (source, ts) => {
   };
 
   const parseBlock = () => {
-    const body = parseList("{", "}", ";", parseExpression);
+    const body = parseList("{", "}", () => skipPunc(";"), parseExpression);
     return body.length === 1 ? body : { type: "block", body };
   };
 
@@ -151,11 +153,21 @@ const parse = (source, ts) => {
   const parseExpression = () =>
     maybeCall(() => maybeTernary(maybeBinary(maybeCall(parseAtom))));
 
+  const parseDestructuring = () => {
+    const elements = parseList("(", ")", () => skipOp("::"), parseAtom);
+    skipOp("=");
+    return {
+      type: "assign",
+      left: { type: "array-pattern", elements },
+      right: parseExpression()
+    };
+  };
+
   const parseAssign = () => {
     ts.next();
+    if (isPunc("(")) return parseDestructuring();
     const tokens = parseWhile(isId, parseAtom);
-    if (!isOp("=")) return error();
-    ts.next();
+    skipOp("=");
     const [id, ...ids] = tokens;
     return {
       type: "assign",

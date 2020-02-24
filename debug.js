@@ -6,14 +6,13 @@ const parser = require("./parser");
 const eval = require("./eval");
 
 const source = `
-let div b a = a / b;
+let map fn ls = {
+  let (x :: xs) = ls;
+  if (xs == []) then [(fn x)]
+  else (fn x) :: (map fn xs)
+};
 let add a b = a + b;
-let fn = div 2 >> add 2;
-
-let with-pipe = 10 |> div 2 |> add 2;
-let with-composition = fn 10;
-
-[ with-pipe with-composition (fn 10) ];
+map (add 2) [1 2]
 `;
 
 const print = (label, thing) =>
@@ -21,7 +20,7 @@ const print = (label, thing) =>
 
 console.log("SOURCE", source);
 
-// const tokens = lexer(source);
+const tokens = lexer(source);
 // print("TOKENS", tokens);
 
 const ast = parser(source);

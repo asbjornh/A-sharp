@@ -4,6 +4,7 @@ const keywords = ["let", "true", "false", "if", "else", "then"];
 /* prettier-ignore */
 const operators = [
   "|>", ">>",
+  "::",
   "<=", ">=", "!=", "==", "||", "&&",
   "<", ">", "=", "+", "-", "/", "%", "*"
 ];
@@ -29,9 +30,10 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
 
   if (isComment(stack)) return stack.endsWith("\n") ? nextLine() : next();
   if (stack === "/" && char === "/") return next();
+  if (isOp(stack) || isOp(stack + char))
+    return isOp(stack + char) ? next() : consumeStack("op");
   if (isPunc(stack)) return consumeStack("punc");
   if (isKw(stack) && !isId(char)) return consumeStack("kw");
-  if (isOp(stack)) return isOp(stack + char) ? next() : consumeStack("op");
   if (isId(stack) && !isId(char)) return consumeStack("id");
   if (isNum(stack) && !isNum(char)) return consumeStack("number");
   if (isString(stack) && !isString(char))

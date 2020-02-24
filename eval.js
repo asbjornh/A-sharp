@@ -17,7 +17,7 @@ const throwWithNode = (node, msg) => {
 };
 
 const getIdName = node => {
-  if (!node.type === "id") {
+  if (node.type !== "id") {
     throwWithNode(
       node,
       `Type error: Cannot assign to node of type '${node.type}'`
@@ -38,6 +38,12 @@ module.exports = function evaluate(node, env) {
   const assertNum = assertType("number");
   const assertFunc = assertType("function");
 
+  const assertArray = node => {
+    const arr = eval(node);
+    if (!Array.isArray(arr))
+      throw Error(`Type error: Expected 'array' but got '${typeof arr}'`);
+    return arr;
+  };
   const assertNonZero = node => {
     const num = assertNum(node);
     if (num === 0) throw Error(`Division by zero`);
@@ -52,6 +58,10 @@ module.exports = function evaluate(node, env) {
       return global.eval(`${num(left)} ${operator} ${nonZero(right)}`);
     if (operator === "==") return eval(left) === eval(right);
     if (operator === "!=") return eval(left) !== eval(right);
+    if (operator === "::") {
+      const arr = catchWithNode(right, () => assertArray(right));
+      return [eval(left), ...arr];
+    }
     if (operator === "|>") {
       const fn = catchWithNode(node.right.callee, () => assertFunc(right));
       return fn(eval(left));
@@ -75,6 +85,19 @@ module.exports = function evaluate(node, env) {
     return evaluate(node.body, scope);
   };
 
+  const evalDestructuring = (left, right) => {
+    const names = catchWithNode(left, () => assertArray(left));
+    const values = catchWithNode(right, () => assertArray(right));
+    console.log("destructure", values);
+    if (names.length > values.length + 1)
+      throwWithNode(right, `Input array too short`);
+    names.reduce((acc, name) => {
+      const [value, ...rest] = acc;
+      env.set(name, rest.length > 0 ? value : [value]);
+      return rest;
+    }, values);
+  };
+
   switch (node.type) {
     case "unit":
       return undefined;
@@ -84,12 +107,15 @@ module.exports = function evaluate(node, env) {
       return node.value;
     case "array":
       return node.elements.map(eval);
+    case "array-pattern":
+      return node.elements.map(getIdName);
     case "id":
       return catchWithNode(node, () => env.get(node.value));
     case "assign":
-      return catchWithNode(node.left, () =>
-        env.set(getIdName(node.left), eval(node.right))
-      );
+      if (node.left.type === "array-pattern") {
+        return evalDestructuring(node.left, node.right);
+      }
+      return env.set(getIdName(node.left), eval(node.right));
     case "binary":
       return evalBinary(node);
     case "call":
@@ -101,6 +127,9 @@ module.exports = function evaluate(node, env) {
       return eval(node.condition) ? eval(node.then) : eval(node.else);
     case "if":
       return eval(node.condition) ? eval(node.then) : eval(node.else);
+    case "block":
+      const blockEnv = env.extend();
+      return node.body.reduce((_, node) => evaluate(node, blockEnv), null);
     case "program":
       const globalEnv = environment();
       return node.body.reduce((_, node) => evaluate(node, globalEnv), null);
