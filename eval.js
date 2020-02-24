@@ -93,7 +93,7 @@ module.exports = function evaluate(node, env) {
       throwWithNode(right, `Input array too short`);
     names.reduce((acc, name, i) => {
       const [value, ...rest] = acc;
-      env.set(name, i < names.length - 1 ? value : value ? [value] : []);
+      env.set(name, i < names.length - 1 ? value : acc);
       return rest;
     }, values);
   };
