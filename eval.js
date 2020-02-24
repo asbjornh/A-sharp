@@ -1,3 +1,4 @@
+const deepEq = require("./util/deep-equal");
 const environment = require("./env");
 
 const catchWithNode = (node, fn) => {
@@ -56,8 +57,8 @@ module.exports = function evaluate(node, env) {
     const { left, right, operator } = node;
     if (operator === "/" || operator === "%")
       return global.eval(`${num(left)} ${operator} ${nonZero(right)}`);
-    if (operator === "==") return eval(left) === eval(right);
-    if (operator === "!=") return eval(left) !== eval(right);
+    if (operator === "==") return deepEq(eval(left), eval(right));
+    if (operator === "!=") return !deepEq(eval(left), eval(right));
     if (operator === "::") {
       const arr = catchWithNode(right, () => assertArray(right));
       return [eval(left), ...arr];
