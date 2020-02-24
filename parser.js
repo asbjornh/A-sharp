@@ -125,7 +125,7 @@ const parse = (source, ts) => {
       const rightPrec = precedence[tok.value];
       if (rightPrec > leftPrec) {
         ts.next();
-        const right = maybeBinary(maybeCall(parseAtom), rightPrec);
+        const right = maybeBinary(maybeCallOrFunc(parseAtom), rightPrec);
         const binary = { type: "binary", operator: tok.value, left, right };
         return maybeBinary(binary, leftPrec);
       }
@@ -133,17 +133,21 @@ const parse = (source, ts) => {
     return left;
   };
 
-  const maybeCall = exprParser => {
+  const maybeCallOrFunc = exprParser => {
     const expr = exprParser();
-    return isParam() && isId(expr) ? parseCall(expr) : expr;
+    return isId(expr) && (isParam() || isOp("=>"))
+      ? parseCallOrFunc(expr)
+      : expr;
   };
 
-  const parseCall = callee => ({
-    type: "call",
-    callee,
-    loc: callee.loc,
-    args: parseWhile(isParam, parseAtom)
-  });
+  const parseCallOrFunc = id => {
+    const args = parseWhile(isParam, parseAtom);
+    if (isId(id) && args.every(arg => isId(arg)) && isOp("=>")) {
+      skipOp("=>");
+      return { type: "fun", args: [id, ...args], body: parseExpression() };
+    }
+    return { type: "call", callee: id, loc: id.loc, args };
+  };
 
   const parseNum = () => {
     const node = ts.next();
@@ -151,7 +155,9 @@ const parse = (source, ts) => {
   };
 
   const parseExpression = () =>
-    maybeCall(() => maybeTernary(maybeBinary(maybeCall(parseAtom))));
+    maybeCallOrFunc(() =>
+      maybeTernary(maybeBinary(maybeCallOrFunc(parseAtom)))
+    );
 
   const parseDestructuring = () => {
     const elements = parseList("(", ")", () => skipOp("::"), parseAtom);

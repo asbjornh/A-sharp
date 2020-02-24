@@ -3,6 +3,7 @@ const error = require("./util/error");
 const keywords = ["let", "true", "false", "if", "else", "then"];
 /* prettier-ignore */
 const operators = [
+  "=>",
   "|>", ">>",
   "::",
   "<=", ">=", "!=", "==", "||", "&&",

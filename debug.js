@@ -6,13 +6,13 @@ const parser = require("./parser");
 const eval = require("./eval");
 
 const source = `
-let map fn ls = {
-  let (x :: xs) = ls;
-  if (xs == []) then [(fn x)]
-  else (fn x) :: (map fn xs)
+let map fn list = {
+  let (x :: xs) = list;
+  if xs == [] then [(fn x)]
+  else fn x :: map fn xs
 };
-let add a b = a + b;
-map (add 2) [1 2]
+
+map (n => n + 2) [1 2 3 4]
 `;
 
 const print = (label, thing) =>
