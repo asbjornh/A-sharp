@@ -1,4 +1,4 @@
-const codeFrame = require("./util/code-frame");
+const error = require("./util/error");
 
 const keywords = ["let", "true", "false", "if", "else", "then"];
 /* prettier-ignore */
@@ -39,14 +39,11 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
   if (isString(stack) && !isString(char))
     return consumeStack("string", stack.replace(/"/g, ""));
 
-  // TODO: Use error util
   // NOTE: If the stack holds any value when reaching the end of the line, the first character of the stack is invalid
   if (stack && char === "\n" && stack !== "\n") {
-    const errCol = col - stack.length + 1;
-    const cf = codeFrame(input.join(""), line, errCol, errCol + 1);
     const character = stack[0] === "\n" ? "newline" : `character '${stack[0]}'`;
-    console.error(`${cf}\n\nParse error: Unexpected ${character}`);
-    process.exit(1);
+    const loc = { line, col: col - stack.length + 1 };
+    error(`Parse error: Unexpected ${character}`, input.join(""), loc);
   }
 
   if (stack === "\n") return nextLine();
