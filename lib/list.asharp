@@ -1,0 +1,57 @@
+export length ls = {
+  let (x :: xs) = ls;
+  if xs == [] then 1
+  else 1 + (length xs);
+};
+
+export concat a b = a @ b;
+
+export map fn ls = {
+  let (x :: xs) = ls;
+  if xs == [] then [(fn x)]
+  else fn x :: map fn xs
+};
+
+export flat ls = {
+  let (x :: xs) = ls;
+  if xs == [] then x
+  else x @ flat xs
+};
+
+export flat-map fn ls = {
+  let (x :: xs) = ls;
+  if xs == [] then map fn x
+  else map fn x @ flat-map fn xs
+};
+
+export filter fn ls = {
+  let (x :: xs) = ls;
+  if xs == [] then
+    fn x ? [x] : []
+  else
+    fn x ? (x :: filter fn xs) : (filter fn xs)
+};
+
+export reduce fn ls = {
+  let (a :: as) = ls;
+  if as == [] then a
+  else {
+    let (b :: bs) = as;
+    let cur = fn a b;
+    if bs == [] then cur
+    else fn cur (reduce fn bs)
+  }
+};
+
+export every fn ls = {
+  let (x :: xs) = ls;
+  if xs == [] then (fn x)
+  else if (fn x) then every fn xs
+  else false
+};
+
+export some fn ls = {
+  let (x :: xs) = ls;
+  if xs == [] then (fn x)
+  else (fn x) || (some fn xs)
+};

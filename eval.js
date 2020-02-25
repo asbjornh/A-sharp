@@ -143,6 +143,7 @@ function evaluate(node, cwd, env, expEnv) {
       return node.body.reduce((_, node) => evaluate(node, cwd, blockEnv), null);
     case "export":
       if (!expEnv) throwWithNode(node.left, "Cannot export in block scope");
+      env.set(getIdName(node.left), eval(node.right));
       return expEnv.set(getIdName(node.left), eval(node.right));
     case "import":
       const moduleExports = catchWithNode(node.source, () =>
