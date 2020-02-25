@@ -3,8 +3,8 @@ module.exports = function(code, line, startCol, endCol) {
     const lineIndex = Math.max(1, line - 1);
     const sourceLines = code.split("\n");
     const lines = sourceLines
-      .slice(lineIndex - 1, lineIndex + 2)
-      .map((l, index) => `${index + lineIndex} |  ${l}`);
+      .map((l, index) => `${index + 1} |  ${l}`)
+      .slice(lineIndex - 1, lineIndex + 2);
 
     const secondLine =
       "  |  " + " ".repeat(startCol - 1) + "^".repeat(endCol - startCol);
