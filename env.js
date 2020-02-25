@@ -20,7 +20,7 @@ module.exports = function environment(parent) {
     vars[name] = value;
   };
 
-  const env = { extend, get, lookup, parent, set };
+  const env = { extend, get, lookup, parent, set, vars };
 
   return env;
 };

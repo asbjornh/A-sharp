@@ -169,14 +169,14 @@ const parse = (source, ts) => {
     };
   };
 
-  const parseAssign = () => {
-    ts.next();
+  const parseDeclaration = (kw, type) => {
+    skipKw(kw);
     if (isPunc("(")) return parseDestructuring();
     const tokens = parseWhile(isId, parseAtom);
     skipOp("=");
     const [id, ...ids] = tokens;
     return {
-      type: "assign",
+      type,
       left: id,
       right: ids.length
         ? { type: "fun", args: ids, body: parseExpression() }
@@ -184,11 +184,21 @@ const parse = (source, ts) => {
     };
   };
 
+  const parseImport = () => {
+    skipKw("import");
+    const id = isId() ? ts.next() : error();
+    skipKw("from");
+    const source = isStr() ? ts.next() : error();
+    return { type: "import", id, source };
+  };
+
   const parseAtom = () => {
     if (isPunc("{")) return parseBlock();
     if (isPunc("(")) return parseParenthesized(parseExpression);
     if (isArray()) return parseArray();
-    if (isKw("let")) return parseAssign();
+    if (isKw("import")) return parseImport();
+    if (isKw("export")) return parseDeclaration("export", "export");
+    if (isKw("let")) return parseDeclaration("let", "assign");
     if (isKw("if")) return parseIf();
     if (isBool()) return { type: "bool", value: ts.next().value === "true" };
     if (isNum()) return parseNum();

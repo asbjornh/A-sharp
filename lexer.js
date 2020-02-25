@@ -1,6 +1,16 @@
 const error = require("./util/error");
 
-const keywords = ["let", "true", "false", "if", "else", "then"];
+const keywords = [
+  "let",
+  "true",
+  "false",
+  "if",
+  "else",
+  "then",
+  "import",
+  "from",
+  "export"
+];
 /* prettier-ignore */
 const operators = [
   "=>",

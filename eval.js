@@ -1,5 +1,8 @@
 const deepEq = require("./util/deep-equal");
+const error = require("./util/error");
 const environment = require("./env");
+const globals = require("./globals");
+const importModule = require("./util/import-module");
 
 const catchWithNode = (node, fn) => {
   try {
@@ -18,17 +21,14 @@ const throwWithNode = (node, msg) => {
 };
 
 const getIdName = node => {
-  if (node.type !== "id") {
-    throwWithNode(
-      node,
-      `Type error: Cannot assign to node of type '${node.type}'`
-    );
-  }
+  if (node.type !== "id")
+    throwWithNode(node, `Type error: Unexpected '${node.type}'`);
+
   return node.value;
 };
 
-module.exports = function evaluate(node, env) {
-  const eval = node => evaluate(node, env);
+function evaluate(node, cwd, env, expEnv) {
+  const eval = node => evaluate(node, cwd, env);
 
   const assertType = type => node => {
     const value = eval(node);
@@ -85,7 +85,7 @@ module.exports = function evaluate(node, env) {
       throwWithNode(args.slice(-1)[0], "Too many arguments");
     }
     args.forEach((arg, index) => scope.set(node.args[index].value, arg));
-    return evaluate(node.body, scope);
+    return evaluate(node.body, cwd, scope);
   };
 
   const evalDestructuring = (left, right) => {
@@ -131,11 +131,42 @@ module.exports = function evaluate(node, env) {
       return eval(node.condition) ? eval(node.then) : eval(node.else);
     case "block":
       const blockEnv = env.extend();
-      return node.body.reduce((_, node) => evaluate(node, blockEnv), null);
+      return node.body.reduce((_, node) => evaluate(node, cwd, blockEnv), null);
+    case "export":
+      if (!expEnv) throwWithNode(node.left, "Cannot export in block scope");
+      return expEnv.set(getIdName(node.left), eval(node.right));
+    case "import":
+      const moduleExports = catchWithNode(node.source, () =>
+        importModule(eval(node.source), cwd, tryEvaluate)
+      );
+      const name = getIdName(node.id);
+      if (name in moduleExports) return env.set(name, moduleExports[name]);
+      else throwWithNode(node.id, `No export named '${name}'`);
     case "program":
       const globalEnv = environment();
-      return node.body.reduce((_, node) => evaluate(node, globalEnv), null);
+      Object.entries(globals).forEach(([name, value]) => {
+        globalEnv.set(name, value);
+      });
+      const moduleEnv = globalEnv.extend();
+      const exportEnv = environment();
+      const body = node.body.reduce(
+        (_, node) => evaluate(node, cwd, moduleEnv, exportEnv),
+        null
+      );
+      return Object.keys(exportEnv.vars).length > 0
+        ? { __module: exportEnv.vars }
+        : body;
     default:
-      throw Error(`Missing implementation for '${node.type}'`);
+      throw Error(`Eval: Missing implementation for '${node.type}'`);
   }
-};
+}
+
+function tryEvaluate(ast, source, cwd) {
+  try {
+    return evaluate(ast, cwd);
+  } catch (e) {
+    error(e.message, source, e.node && e.node.loc, e.node && e.node.value);
+  }
+}
+
+module.exports = tryEvaluate;
