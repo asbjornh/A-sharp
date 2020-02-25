@@ -63,6 +63,11 @@ function evaluate(node, cwd, env, expEnv) {
       const arr = catchWithNode(right, () => assertArray(right));
       return [eval(left), ...arr];
     }
+    if (operator === "@") {
+      const l = catchWithNode(left, () => assertArray(left));
+      const r = catchWithNode(right, () => assertArray(right));
+      return [...l, ...r];
+    }
     if (operator === "|>") {
       const fn = catchWithNode(node.right.callee, () => assertFunc(right));
       return fn(eval(left));
