@@ -36,6 +36,7 @@ function evaluate(node, cwd, env, expEnv) {
       throw Error(`Type error: Expected '${type}' but got '${typeof value}'`);
     return value;
   };
+  const assertBool = assertType("boolean");
   const assertNum = assertType("number");
   const assertFunc = assertType("function");
 
@@ -50,6 +51,7 @@ function evaluate(node, cwd, env, expEnv) {
     if (num === 0) throw Error(`Division by zero`);
     return num;
   };
+  const bool = node => catchWithNode(node, () => assertBool(node));
   const num = node => catchWithNode(node, () => assertNum(node));
   const nonZero = node => catchWithNode(node, () => assertNonZero(node));
 
@@ -77,7 +79,9 @@ function evaluate(node, cwd, env, expEnv) {
       const r = catchWithNode(right.callee, () => assertFunc(right));
       return (...args) => r(l(...args));
     }
-    if (["||", "&&", "<", ">", "+", "-", "*", "/", "%"].includes(operator))
+    if (operator == "||" || operator == "&&")
+      return global.eval(`${bool(left)} ${operator} ${bool(right)}`);
+    if (["<", ">", "+", "-", "*", "/", "%"].includes(operator))
       return global.eval(`${num(left)} ${operator} ${num(right)}`);
     throwWithNode(right, `Unexpected operator '${operator}'`);
   };
