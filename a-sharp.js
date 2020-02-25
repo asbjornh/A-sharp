@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const util = require("util");
 
 const lexer = require("./lexer");
 const parser = require("./parser");
@@ -21,9 +22,9 @@ const cwd = path.dirname(filePath);
 const source = fs.readFileSync(filePath, "utf8");
 
 const print = (label, thing) =>
-  console.log(label, util.inspect(thing, false, null, true));
+  console.log(label, util.inspect(thing, false, null, true), "\n");
 
-if (printSource) console.log("SOURCE", source);
+if (printSource) console.log("SOURCE") || console.log(source, "\n");
 if (printTokens) print("TOKENS", lexer(source));
 
 const ast = parser(source);
