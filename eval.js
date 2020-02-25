@@ -139,9 +139,11 @@ function evaluate(node, cwd, env, expEnv) {
       const moduleExports = catchWithNode(node.source, () =>
         importModule(eval(node.source), cwd, tryEvaluate)
       );
-      const name = getIdName(node.id);
-      if (name in moduleExports) return env.set(name, moduleExports[name]);
-      else throwWithNode(node.id, `No export named '${name}'`);
+      return node.ids.forEach(id => {
+        const name = getIdName(id);
+        if (name in moduleExports) return env.set(name, moduleExports[name]);
+        else throwWithNode(id, `No export named '${name}'`);
+      });
     case "program":
       const globalEnv = environment();
       Object.entries(globals).forEach(([name, value]) => {

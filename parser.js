@@ -186,10 +186,10 @@ const parse = (source, ts) => {
 
   const parseImport = () => {
     skipKw("import");
-    const id = isId() ? ts.next() : error();
+    const ids = parseList("(", ")", null, () => (isId() ? ts.next() : error()));
     skipKw("from");
     const source = isStr() ? ts.next() : error();
-    return { type: "import", id, source };
+    return { type: "import", ids, source };
   };
 
   const parseAtom = () => {
