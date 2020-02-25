@@ -8,7 +8,7 @@ module.exports = function(code, line, startCol, endCol) {
 
     const secondLine =
       "  |  " + " ".repeat(startCol - 1) + "^".repeat(endCol - startCol);
-    lines.splice(line, 0, secondLine);
+    lines.splice(Math.min(2, line), 0, secondLine);
     return lines.join("\n");
   } catch (e) {
     return "";
