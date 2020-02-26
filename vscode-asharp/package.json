@@ -1,0 +1,34 @@
+{
+  "name": "a-sharp-syntax",
+  "displayName": "A# Syntax",
+  "description": "A# Syntax",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.42.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "asharp",
+        "aliases": [
+          "A#",
+          "asharp"
+        ],
+        "extensions": [
+          ".asharp"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "asharp",
+        "scopeName": "source.asharp",
+        "path": "./syntaxes/asharp.tmLanguage.json"
+      }
+    ]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "A#",
+  "patterns": [
+    {
+      "name": "support.function.asharp",
+      "match": "\\b(print)\\b"
+    },
+    {
+      "name": "keyword.control.asharp",
+      "match": "\\b(let|if|else|then|import|from|export)\\b"
+    },
+    {
+      "name": "punctuation.asharp",
+      "match": "[{}\\[\\]\\(\\)\\|\\?;=+<>:@]"
+    },
+    {
+      "name": "comment.asharp",
+      "match": "\\/\\/.+"
+    },
+    {
+      "match": "(?<=let|export) ([a-zA-Z][\\w-]*)(( [a-zA-Z][\\w-]*)+)",
+      "captures": {
+        "1": { "name": "entity.name.function.asharp" },
+        "2": { "name": "variable.parameter.asharp" }
+      }
+    },
+    {
+      "match": "([a-zA-Z][\\w-]*) (?=[\\w-\"(])",
+      "captures": {
+        "1": { "name": "entity.name.function.asharp" }
+      }
+    },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#booleans" }
+  ],
+  "repository": {
+    "booleans": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.asharp",
+          "match": "\\d+(\\.\\d+)?"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.asharp",
+      "begin": "\"",
+      "end": "\""
+    }
+  },
+  "scopeName": "source.asharp"
+}
