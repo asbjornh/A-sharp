@@ -19,11 +19,11 @@ const operators = [
   "<=", ">=", "!=", "==", "||", "&&",
   "<", ">", "=", "+", "-", "/", "%", "*"
 ];
-const punctuation = "()[]{};?:";
+const punctuation = "()[]{};?:.";
 
 const isId = str => str && /^[a-zA-Z-]*$/.test(str);
 const isKw = str => str && keywords.includes(str);
-const isNum = str => str && /^\d*\.?\d*$/.test(str);
+const isNum = str => str && /^\d+$/.test(str);
 const isOp = str => str && operators.includes(str);
 const isPunc = str => str && punctuation.includes(str);
 const isString = str => str && /^".*"$/.test(str);

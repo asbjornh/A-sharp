@@ -26,6 +26,7 @@ const parse = (source, ts) => {
     !ts.eof() && type === token.type && (!value || value === token.value);
   const isKw = str => is("kw", str);
   const isId = token => is("id", undefined, token);
+  const isMember = token => is("member", undefined, token);
   const isPunc = str => is("punc", str);
   const isOp = str => is("op", str);
   const isNum = () => is("number");
@@ -135,7 +136,7 @@ const parse = (source, ts) => {
 
   const maybeCallOrFunc = exprParser => {
     const expr = exprParser();
-    return isId(expr) && (isParam() || isOp("=>"))
+    return (isId(expr) || isMember(expr)) && (isParam() || isOp("=>"))
       ? parseCallOrFunc(expr)
       : expr;
   };
@@ -150,8 +151,26 @@ const parse = (source, ts) => {
   };
 
   const parseNum = () => {
-    const node = ts.next();
-    return { ...node, value: parseFloat(node.value) };
+    const num = ts.next();
+    if (isPunc(".")) {
+      skipPunc(".");
+      const dec = isNum() ? ts.next() : error();
+      return { ...num, value: parseFloat(`${num.value}.${dec.value}`) };
+    }
+    return { ...num, value: parseFloat(num.value) };
+  };
+
+  const parseId = () => (isId() ? ts.next() : error());
+  const parseStr = () => (isStr() ? ts.next() : error());
+
+  const parseIdOrMember = () => {
+    const id = parseId();
+    if (isPunc(".")) {
+      skipPunc(".");
+      const property = parseId();
+      return { type: "member", object: id, property };
+    }
+    return id;
   };
 
   const parseExpression = () =>
@@ -186,10 +205,14 @@ const parse = (source, ts) => {
 
   const parseImport = () => {
     skipKw("import");
-    const ids = parseList("(", ")", null, () => (isId() ? ts.next() : error()));
+    if (isPunc("(")) {
+      const ids = parseList("(", ")", null, parseId);
+      skipKw("from");
+      return { type: "import", ids, source: parseStr() };
+    }
+    const id = parseId();
     skipKw("from");
-    const source = isStr() ? ts.next() : error();
-    return { type: "import", ids, source };
+    return { type: "import-all", id, source: parseStr() };
   };
 
   const parseAtom = () => {
@@ -202,8 +225,8 @@ const parse = (source, ts) => {
     if (isKw("if")) return parseIf();
     if (isBool()) return { type: "bool", value: ts.next().value === "true" };
     if (isNum()) return parseNum();
-    if (isStr()) return ts.next();
-    if (isId()) return ts.next();
+    if (isStr()) return parseStr();
+    if (isId()) return parseIdOrMember();
     error();
   };
 

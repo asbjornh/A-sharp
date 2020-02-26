@@ -122,6 +122,13 @@ function evaluate(node, cwd, env, expEnv) {
       return node.elements.map(getIdName);
     case "id":
       return catchWithNode(node, () => env.get(node.value));
+    case "member": {
+      const objectName = getIdName(node.object);
+      const property = getIdName(node.property);
+      const object = catchWithNode(node.object, () => env.get(objectName));
+      if (property in object) return object[property];
+      throwWithNode(node.property, `'${property}' is not defined.`);
+    }
     case "assign":
       if (node.left.type === "array-pattern") {
         return evalDestructuring(node.left, node.right);
@@ -145,7 +152,7 @@ function evaluate(node, cwd, env, expEnv) {
       if (!expEnv) throwWithNode(node.left, "Cannot export in block scope");
       env.set(getIdName(node.left), eval(node.right));
       return expEnv.set(getIdName(node.left), eval(node.right));
-    case "import":
+    case "import": {
       const moduleExports = catchWithNode(node.source, () =>
         importModule(eval(node.source), cwd, tryEvaluate)
       );
@@ -154,6 +161,14 @@ function evaluate(node, cwd, env, expEnv) {
         if (name in moduleExports) return env.set(name, moduleExports[name]);
         else throwWithNode(id, `No export named '${name}'`);
       });
+    }
+    case "import-all": {
+      const name = getIdName(node.id);
+      const moduleExports = catchWithNode(node.source, () =>
+        importModule(eval(node.source), cwd, tryEvaluate)
+      );
+      return env.set(name, moduleExports);
+    }
     case "program":
       const globalEnv = environment();
       Object.entries(globals).forEach(([name, value]) => {
