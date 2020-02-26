@@ -3,17 +3,14 @@
   "name": "A#",
   "patterns": [
     {
-      "name": "support.function.asharp",
-      "match": "\\b(print)\\b"
+      "match": "(import) ([a-zA-Z-]+)",
+      "captures": {
+        "1": { "patterns": [{ "include": "#keywords" }] },
+        "2": { "name": "support.class.asharp" }
+      }
     },
-    {
-      "name": "keyword.control.asharp",
-      "match": "\\b(let|if|else|then|import|from|export)\\b"
-    },
-    {
-      "name": "punctuation.asharp",
-      "match": "[{}\\[\\]\\(\\)\\|\\?;=+<>:@]"
-    },
+    { "include": "#keywords" },
+    { "include": "#punctuation" },
     {
       "name": "comment.asharp",
       "match": "\\/\\/.+"
@@ -25,21 +22,61 @@
         "2": { "name": "variable.parameter.asharp" }
       }
     },
+    { "include": "#arrow-function" },
     {
-      "match": "([a-zA-Z][\\w-]*) (\\(|[\\w-\"]+)",
+      "name": "entity.name.function.asharp",
+      "match": "(?<=(?:\\|>|>>)) ?(?![\\w-]+\\.)([\\w-]+)"
+    },
+    {
+      "match": "([a-zA-Z][\\w-]*) (\\(|[\\w-\"]+[ );])",
       "captures": {
-        "1": { "name": "entity.name.function.asharp" }
+        "1": { "name": "entity.name.function.asharp" },
+        "2": {
+          "patterns": [
+            { "include": "#arrow-function" },
+            { "include": "#punctuation" },
+            { "include": "#keywords" },
+            { "include": "#strings" },
+            { "include": "#numbers" },
+            { "include": "#booleans" }
+          ]
+        }
       }
     },
+    { "include": "#object" },
     { "include": "#strings" },
     { "include": "#numbers" },
     { "include": "#booleans" }
   ],
   "repository": {
+    "object": {
+      "patterns": [
+        {
+          "name": "support.class",
+          "match": "[a-zA-Z-]+(?=\\.)"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.asharp",
+          "match": "[{}\\[\\]\\(\\)\\|\\?;=+<>:@]"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.asharp",
+          "match": "\\b(let|if|else|then|import|from|export)\\b"
+        }
+      ]
+    },
     "booleans": {
       "patterns": [
         {
-          "name": "constant.language.boolean",
+          "name": "constant.language.boolean.asharp",
           "match": "\\b(true|false)\\b"
         }
       ]
@@ -56,6 +93,14 @@
       "name": "string.quoted.double.asharp",
       "begin": "\"",
       "end": "\""
+    },
+    "arrow-function": {
+      "patterns": [
+        {
+          "name": "variable.parameter.asharp",
+          "match": "(([a-zA-Z-]+ )+)(?=\\=\\>)"
+        }
+      ]
     }
   },
   "scopeName": "source.asharp"
