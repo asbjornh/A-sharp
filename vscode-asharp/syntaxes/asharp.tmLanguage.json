@@ -10,11 +10,6 @@
       }
     },
     { "include": "#keywords" },
-    { "include": "#punctuation" },
-    {
-      "name": "comment.asharp",
-      "match": "\\/\\/.+"
-    },
     {
       "match": "(?<=let|export) ([a-zA-Z][\\w-]*)(( [a-zA-Z][\\w-]*)+)",
       "captures": {
@@ -43,7 +38,13 @@
         }
       }
     },
+    {
+      "name": "comment.asharp",
+      "match": "\\/\\/.+"
+    },
     { "include": "#object" },
+    { "include": "#variables" },
+    { "include": "#punctuation" },
     { "include": "#strings" },
     { "include": "#numbers" },
     { "include": "#booleans" }
@@ -57,11 +58,19 @@
         }
       ]
     },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.name",
+          "match": "[a-zA-Z][\\w-]*"
+        }
+      ]
+    },
     "punctuation": {
       "patterns": [
         {
           "name": "punctuation.asharp",
-          "match": "[{}\\[\\]\\(\\)\\|\\?;=+<>:@]"
+          "match": "[{}\\[\\]\\(\\)\\|\\?\\/\\-;=+*<>:@]"
         }
       ]
     },
