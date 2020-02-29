@@ -31,7 +31,9 @@ const isComment = str => str && str.startsWith("//");
 
 const reducer = ([tokens, stack, line, col], char, index, input) => {
   const consumeStack = (type, value = stack) => {
-    const loc = { line, col: col - stack.length + 1 };
+    const start = { line, col: col - stack.length + 1 };
+    const end = { line, col: col };
+    const loc = { start, end };
     return [tokens.concat({ type, value, loc }), char, line, col + 1];
   };
 
@@ -53,7 +55,8 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
   // NOTE: If the stack holds any value when reaching the end of the line, the first character of the stack is invalid
   if (stack && char === "\n" && stack !== "\n") {
     const character = stack[0] === "\n" ? "newline" : `character '${stack[0]}'`;
-    const loc = { line, col: col - stack.length + 1 };
+    const startLoc = { line, col: col - stack.length + 1 };
+    const loc = { start: startLoc, end: startLoc };
     error(`Parse error: Unexpected ${character}`, input.join(""), loc);
   }
 

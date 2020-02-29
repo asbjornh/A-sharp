@@ -1,7 +1,7 @@
-module.exports = function(code, startLoc, value = " ") {
+module.exports = function(code, loc) {
   try {
-    const { line, col: startCol } = startLoc;
-    const endCol = startCol + value.length;
+    const { line, col: startCol } = loc.start;
+    const endCol = loc.end.col + 1;
     const lineIndex = Math.max(1, line - 1);
     const sourceLines = code.split("\n");
     const lines = sourceLines

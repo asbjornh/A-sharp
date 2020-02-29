@@ -1,8 +1,8 @@
 const codeFrame = require("./code-frame");
 
-module.exports = function error(msg, source, loc, value = " ") {
-  if (source && loc && value) {
-    const cf = codeFrame(source, loc, value);
+module.exports = function error(msg, source, loc) {
+  if (source && loc) {
+    const cf = codeFrame(source, loc);
     console.error(`${cf}\n\n${msg}`);
   } else {
     console.error(msg);

@@ -14,9 +14,13 @@ const precedence = {
   "|>": 40, ">>": 40
 };
 
+const mkLoc = (startNode, endNode) => ({
+  start: startNode.loc.start,
+  end: endNode.loc.end
+});
+
 // TODO: Maybe use "op" type for calls to binary functions?
 // TODO: Maybe special parsing of |> and >> ?
-// TODO: end loc
 const parse = (source, ts) => {
   const error = msg => {
     const token = ts.peek();
@@ -56,23 +60,24 @@ const parse = (source, ts) => {
   const parseParenthesized = parser => {
     const start = skipPunc("(");
     if (isPunc(")")) {
-      skipPunc(")");
-      return { type: "unit", loc: start.loc };
+      const end = skipPunc(")");
+      return { type: "unit", loc: mkLoc(start, end) };
     }
     if (isOp()) {
       const op = ts.next();
       skipPunc(")");
       const args = parseWhile(isParam, parseAtom);
       const callee = { ...op, type: "id" };
-      return { type: "call", callee, loc: callee.loc, args };
+      const loc = mkLoc(start, args.slice(-1)[0]);
+      return { type: "call", callee, loc, args };
     }
     const node = parser();
-    skipPunc(")");
-    return node;
+    const end = skipPunc(")");
+    return { ...node, loc: mkLoc(node, end) };
   };
 
   const parseList = (start, stop, sepSkipper, parser) => {
-    let expressions = [];
+    let elements = [];
     let first = true;
     skipPunc(start);
     while (!ts.eof()) {
@@ -80,25 +85,27 @@ const parse = (source, ts) => {
       if (first) first = false;
       else if (sepSkipper) sepSkipper();
       if (isPunc(stop)) break;
-      expressions.push(parser());
+      elements.push(parser());
     }
-    skipPunc(stop);
-    return expressions;
+    return [elements, skipPunc(stop)];
   };
 
   const parseArray = () => {
-    const { loc } = ts.peek();
-    const elements = parseList("[", "]", null, parseAtom);
-    return { type: "array", elements, loc };
+    const start = ts.peek();
+    const [elements, end] = parseList("[", "]", null, parseAtom);
+    return { type: "array", elements, loc: mkLoc(start, end) };
   };
 
   const parseBlock = () => {
-    const body = parseList("{", "}", () => skipPunc(";"), parseExpression);
-    return body.length === 1 ? body : { type: "block", body };
+    const start = ts.peek();
+    const sep = () => skipPunc(";");
+    const [body, end] = parseList("{", "}", sep, parseExpression);
+    const loc = mkLoc(start, end);
+    return body.length === 1 ? body : { type: "block", body, loc };
   };
 
   const parseIf = () => {
-    skipKw("if");
+    const start = skipKw("if");
     const condition = parseExpression();
     skipKw("then");
     const thenBranch = parseExpression();
@@ -108,13 +115,14 @@ const parse = (source, ts) => {
       type: "if",
       condition,
       then: thenBranch,
-      else: elseBranch
+      else: elseBranch,
+      loc: mkLoc(start, elseBranch)
     };
   };
 
   const maybeTernary = first => {
     if (isPunc("?")) {
-      skipPunc("?");
+      const start = skipPunc("?");
       const thenBranch = parseExpression();
       skipPunc(":");
       const elseBranch = parseExpression();
@@ -122,7 +130,8 @@ const parse = (source, ts) => {
         type: "ternary",
         condition: first,
         then: thenBranch,
-        else: elseBranch
+        else: elseBranch,
+        loc: mkLoc(start, elseBranch)
       };
     }
     return first;
@@ -137,7 +146,8 @@ const parse = (source, ts) => {
         ts.next();
         const right = maybeInfix(maybeCallOrFunc(parseAtom), rightPrec);
         const callee = { ...tok, type: "id" };
-        const infix = { type: "call", callee, args: [right, left] };
+        const loc = mkLoc(left, right);
+        const infix = { type: "call", callee, args: [right, left], loc };
         return maybeInfix(infix, leftPrec);
       }
     }
@@ -155,9 +165,11 @@ const parse = (source, ts) => {
     const args = parseWhile(isParam, parseAtom);
     if (isId(id) && args.every(arg => isId(arg)) && isOp("=>")) {
       skipOp("=>");
-      return { type: "fun", args: [id, ...args], body: parseExpression() };
+      const body = parseExpression();
+      return { type: "fun", args: [id, ...args], body, loc: mkLoc(id, body) };
     }
-    return { type: "call", callee: id, loc: id.loc, args };
+    const loc = mkLoc(id, args.slice(-1)[0]);
+    return { type: "call", callee: id, loc, args };
   };
 
   const parseNum = () => {
@@ -165,9 +177,16 @@ const parse = (source, ts) => {
     if (isPunc(".")) {
       skipPunc(".");
       const dec = isNum() ? ts.next() : error();
-      return { ...num, value: parseFloat(`${num.value}.${dec.value}`) };
+      const loc = mkLoc(num, dec);
+      return { ...num, value: parseFloat(`${num.value}.${dec.value}`), loc };
     }
     return { ...num, value: parseFloat(num.value) };
+  };
+
+  const parseBool = () => {
+    if (!isBool()) error();
+    const { value, loc } = ts.next();
+    return { type: "bool", value: value === "true", loc };
   };
 
   const parseId = () => (isId() ? ts.next() : error());
@@ -178,7 +197,8 @@ const parse = (source, ts) => {
     if (isPunc(".")) {
       skipPunc(".");
       const property = parseId();
-      return { type: "member", object: id, property, loc: id.loc };
+      const loc = mkLoc(id, property);
+      return { type: "member", object: id, property, loc };
     }
     return id;
   };
@@ -186,41 +206,43 @@ const parse = (source, ts) => {
   const parseExpression = () =>
     maybeCallOrFunc(() => maybeTernary(maybeInfix(maybeCallOrFunc(parseAtom))));
 
-  const parseDestructuring = () => {
-    const elements = parseList("(", ")", () => skipOp("::"), parseAtom);
+  const parseDestructuring = assignStart => {
+    const patternStart = ts.peek();
+    const [elements, end] = parseList("(", ")", () => skipOp("::"), parseAtom);
     skipOp("=");
-    return {
-      type: "assign",
-      left: { type: "array-pattern", elements },
-      right: parseExpression()
-    };
+    const patternLoc = mkLoc(patternStart, end);
+    const left = { type: "array-pattern", elements, loc: patternLoc };
+    const right = parseExpression();
+    return { type: "assign", left, right, loc: mkLoc(assignStart, right) };
   };
 
   const parseDeclaration = (kw, type) => {
-    skipKw(kw);
-    if (isPunc("(")) return parseDestructuring();
+    const kwNode = skipKw(kw);
+    if (isPunc("(")) return parseDestructuring(kwNode);
     const tokens = parseWhile(isId, parseAtom);
     skipOp("=");
     const [id, ...ids] = tokens;
+    const expr = parseExpression();
     return {
       type,
       left: id,
-      right: ids.length
-        ? { type: "fun", args: ids, body: parseExpression() }
-        : parseExpression()
+      right: ids.length ? { type: "fun", args: ids, body: expr } : expr,
+      loc: mkLoc(kwNode, expr)
     };
   };
 
   const parseImport = () => {
-    skipKw("import");
+    const start = skipKw("import");
     if (isPunc("(")) {
-      const ids = parseList("(", ")", null, parseId);
+      const [ids] = parseList("(", ")", null, parseId);
       skipKw("from");
-      return { type: "import", ids, source: parseStr() };
+      const source = parseStr();
+      return { type: "import", ids, source, loc: mkLoc(start, source) };
     }
     const id = parseId();
     skipKw("from");
-    return { type: "import-all", id, source: parseStr() };
+    const source = parseStr();
+    return { type: "import-all", id, source, loc: mkLoc(start, source) };
   };
 
   const parseAtom = () => {
@@ -231,7 +253,7 @@ const parse = (source, ts) => {
     if (isKw("export")) return parseDeclaration("export", "export");
     if (isKw("let")) return parseDeclaration("let", "assign");
     if (isKw("if")) return parseIf();
-    if (isBool()) return { type: "bool", value: ts.next().value === "true" };
+    if (isBool()) return parseBool();
     if (isNum()) return parseNum();
     if (isStr()) return parseStr();
     if (isId()) return parseIdOrMember();
