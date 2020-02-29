@@ -57,6 +57,13 @@ const parse = (source, ts) => {
       skipPunc(")");
       return { type: "unit", loc: start.loc };
     }
+    if (isOp()) {
+      const op = ts.next();
+      skipPunc(")");
+      const args = parseWhile(isParam, parseAtom);
+      const callee = { ...op, type: "id" };
+      return { type: "call", callee, loc: callee.loc, args };
+    }
     const node = parser();
     skipPunc(")");
     return node;
@@ -119,16 +126,17 @@ const parse = (source, ts) => {
     return first;
   };
 
-  const maybeBinary = (left, leftPrec = 0) => {
+  const maybeInfix = (left, leftPrec = 0) => {
     if (isOp()) {
       const tok = ts.peek();
       if (isOp("=")) error();
       const rightPrec = precedence[tok.value];
       if (rightPrec > leftPrec) {
         ts.next();
-        const right = maybeBinary(maybeCallOrFunc(parseAtom), rightPrec);
-        const binary = { type: "binary", operator: tok.value, left, right };
-        return maybeBinary(binary, leftPrec);
+        const right = maybeInfix(maybeCallOrFunc(parseAtom), rightPrec);
+        const callee = { ...tok, type: "id" };
+        const infix = { type: "call", callee, args: [right, left] };
+        return maybeInfix(infix, leftPrec);
       }
     }
     return left;
@@ -174,9 +182,7 @@ const parse = (source, ts) => {
   };
 
   const parseExpression = () =>
-    maybeCallOrFunc(() =>
-      maybeTernary(maybeBinary(maybeCallOrFunc(parseAtom)))
-    );
+    maybeCallOrFunc(() => maybeTernary(maybeInfix(maybeCallOrFunc(parseAtom))));
 
   const parseDestructuring = () => {
     const elements = parseList("(", ")", () => skipOp("::"), parseAtom);

@@ -1,8 +1,8 @@
-const deepEq = require("./util/deep-equal");
 const error = require("./util/error");
 const environment = require("./env");
 const globals = require("./globals");
 const importModule = require("./util/import-module");
+const { arr, func } = require("./util/types");
 
 const catchWithNode = (node, fn) => {
   try {
@@ -30,62 +30,6 @@ const getIdName = node => {
 function evaluate(node, cwd, env, expEnv) {
   const eval = node => evaluate(node, cwd, env);
 
-  const assertType = type => node => {
-    const value = eval(node);
-    if (typeof value !== type)
-      throw Error(`Type error: Expected '${type}' but got '${typeof value}'`);
-    return value;
-  };
-  const assertBool = assertType("boolean");
-  const assertNum = assertType("number");
-  const assertFunc = assertType("function");
-
-  const assertArray = node => {
-    const arr = eval(node);
-    if (!Array.isArray(arr))
-      throw Error(`Type error: Expected 'array' but got '${typeof arr}'`);
-    return arr;
-  };
-  const assertNonZero = node => {
-    const num = assertNum(node);
-    if (num === 0) throw Error(`Division by zero`);
-    return num;
-  };
-  const bool = node => catchWithNode(node, () => assertBool(node));
-  const num = node => catchWithNode(node, () => assertNum(node));
-  const nonZero = node => catchWithNode(node, () => assertNonZero(node));
-
-  const evalBinary = node => {
-    const { left, right, operator } = node;
-    if (operator === "/" || operator === "%")
-      return global.eval(`${num(left)} ${operator} ${nonZero(right)}`);
-    if (operator === "==") return deepEq(eval(left), eval(right));
-    if (operator === "!=") return !deepEq(eval(left), eval(right));
-    if (operator === "::") {
-      const arr = catchWithNode(right, () => assertArray(right));
-      return [eval(left), ...arr];
-    }
-    if (operator === "@") {
-      const l = catchWithNode(left, () => assertArray(left));
-      const r = catchWithNode(right, () => assertArray(right));
-      return [...l, ...r];
-    }
-    if (operator === "|>") {
-      const fn = catchWithNode(node.right.callee, () => assertFunc(right));
-      return fn(eval(left));
-    }
-    if (operator === ">>") {
-      const l = catchWithNode(left.callee, () => assertFunc(left));
-      const r = catchWithNode(right.callee, () => assertFunc(right));
-      return (...args) => r(l(...args));
-    }
-    if (operator == "||" || operator == "&&")
-      return global.eval(`${bool(left)} ${operator} ${bool(right)}`);
-    if (["<", ">", "+", "-", "*", "/", "%"].includes(operator))
-      return global.eval(`${num(left)} ${operator} ${num(right)}`);
-    throwWithNode(right, `Unexpected operator '${operator}'`);
-  };
-
   const applyFunc = (node, args, scope) => {
     if (args.length < node.args.length) {
       return (...moreArgs) =>
@@ -98,8 +42,8 @@ function evaluate(node, cwd, env, expEnv) {
   };
 
   const evalDestructuring = (left, right) => {
-    const names = catchWithNode(left, () => assertArray(left));
-    const values = catchWithNode(right, () => assertArray(right));
+    const names = catchWithNode(left, () => arr(eval(left)));
+    const values = catchWithNode(right, () => arr(eval(right)));
     if (names.length > values.length + 1)
       throwWithNode(right, `Input array too short`);
     names.reduce((acc, name, i) => {
@@ -134,11 +78,11 @@ function evaluate(node, cwd, env, expEnv) {
         return evalDestructuring(node.left, node.right);
       }
       return env.set(getIdName(node.left), eval(node.right));
-    case "binary":
-      return evalBinary(node);
     case "call":
-      const fn = catchWithNode(node.callee, () => assertFunc(node.callee));
-      return fn(...node.args.map(eval));
+      return catchWithNode(node.callee, () => {
+        const fn = func(eval(node.callee));
+        return fn(...node.args.map(eval));
+      });
     case "fun":
       return (...args) => applyFunc(node, args, env.extend());
     case "ternary":
