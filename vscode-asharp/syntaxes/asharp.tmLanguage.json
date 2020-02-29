@@ -10,6 +10,7 @@
       }
     },
     { "include": "#keywords" },
+    { "include": "#booleans" },
     {
       "match": "(?<=let|export) ([a-zA-Z][\\w-]*)(( [a-zA-Z][\\w-]*)+)",
       "captures": {
@@ -46,8 +47,7 @@
     { "include": "#variables" },
     { "include": "#punctuation" },
     { "include": "#strings" },
-    { "include": "#numbers" },
-    { "include": "#booleans" }
+    { "include": "#numbers" }
   ],
   "repository": {
     "object": {
