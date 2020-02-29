@@ -2,7 +2,7 @@ const codeFrame = require("./util/code-frame");
 const environment = require("./env");
 const globals = require("./globals");
 const importModule = require("./util/import-module");
-const { arr, func } = require("./util/types");
+const { arr, bool, func } = require("./util/types");
 
 function evaluate(node, opts, env, expEnv) {
   const eval = node => evaluate(node, opts, env);
@@ -93,9 +93,10 @@ function evaluate(node, opts, env, expEnv) {
     case "fun":
       return (...args) => applyFunc(node, args, env.extend());
     case "ternary":
-      return eval(node.condition) ? eval(node.then) : eval(node.else);
     case "if":
-      return eval(node.condition) ? eval(node.then) : eval(node.else);
+      return catchWithCf(node.condition, () => bool(eval(node.condition)))
+        ? eval(node.then)
+        : eval(node.else);
     case "block":
       const blockEnv = env.extend();
       return node.body.reduce(
