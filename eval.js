@@ -4,22 +4,24 @@ const globals = require("./globals");
 const importModule = require("./util/import-module");
 const { arr, func } = require("./util/types");
 
-function evaluate(node, source, cwd, env, expEnv) {
-  const eval = node => evaluate(node, source, cwd, env);
+function evaluate(node, opts, env, expEnv) {
+  const eval = node => evaluate(node, opts, env);
 
   const catchWithCf = (node, fn) => {
     try {
       return fn();
     } catch (e) {
       // NOTE: Overwriting existing code frame creates misleading output
-      e.cf = e.cf || codeFrame(source, node.loc, node.value);
+      if (opts.codeFrames)
+        e.cf = e.cf || codeFrame(opts.source, node.loc, node.value);
       throw e;
     }
   };
 
   const throwWithCf = (node, msg) => {
     const error = new Error(msg);
-    error.cf = codeFrame(source, node.loc, node.value);
+    opts.codeFrames &&
+      (error.cf = codeFrame(opts.source, node.loc, node.value));
     throw error;
   };
 
@@ -38,7 +40,7 @@ function evaluate(node, source, cwd, env, expEnv) {
       throwWithCf(args.slice(-1)[0], "Too many arguments");
     }
     args.forEach((arg, index) => scope.set(node.args[index].value, arg));
-    return evaluate(node.body, source, cwd, scope);
+    return evaluate(node.body, opts, scope);
   };
 
   const evalDestructuring = (left, right) => {
@@ -79,6 +81,11 @@ function evaluate(node, source, cwd, env, expEnv) {
       }
       return env.set(getIdName(node.left), eval(node.right));
     case "call":
+      if (node.callee.type === "id" && node.callee.value === "|>") {
+        const [call, arg] = node.args;
+        const fn = catchWithCf(call, () => func(eval(call)));
+        return catchWithCf(call, () => fn(eval(arg)));
+      }
       return catchWithCf(node.callee, () => {
         const fn = func(eval(node.callee));
         return fn(...node.args.map(eval));
@@ -92,7 +99,7 @@ function evaluate(node, source, cwd, env, expEnv) {
     case "block":
       const blockEnv = env.extend();
       return node.body.reduce(
-        (_, node) => evaluate(node, source, cwd, blockEnv),
+        (_, node) => evaluate(node, opts, blockEnv),
         null
       );
     case "export":
@@ -101,7 +108,7 @@ function evaluate(node, source, cwd, env, expEnv) {
       return expEnv.set(getIdName(node.left), eval(node.right));
     case "import": {
       const moduleExports = catchWithCf(node.source, () =>
-        importModule(eval(node.source), cwd, tryEvaluate)
+        importModule(eval(node.source), opts.cwd, tryEvaluate)
       );
       return node.ids.forEach(id => {
         const name = getIdName(id);
@@ -112,7 +119,7 @@ function evaluate(node, source, cwd, env, expEnv) {
     case "import-all": {
       const name = getIdName(node.id);
       const moduleExports = catchWithCf(node.source, () =>
-        importModule(eval(node.source), cwd, tryEvaluate)
+        importModule(eval(node.source), opts.cwd, tryEvaluate)
       );
       return env.set(name, moduleExports);
     }
@@ -124,7 +131,7 @@ function evaluate(node, source, cwd, env, expEnv) {
       const moduleEnv = globalEnv.extend();
       const exportEnv = environment();
       const body = node.body.reduce(
-        (_, node) => evaluate(node, source, cwd, moduleEnv, exportEnv),
+        (_, node) => evaluate(node, opts, moduleEnv, exportEnv),
         null
       );
       return Object.keys(exportEnv.vars).length > 0
@@ -135,9 +142,9 @@ function evaluate(node, source, cwd, env, expEnv) {
   }
 }
 
-function tryEvaluate(ast, source, cwd) {
+function tryEvaluate(ast, { codeFrames, source, cwd }) {
   try {
-    return evaluate(ast, source, cwd);
+    return evaluate(ast, { codeFrames, source, cwd });
   } catch (e) {
     if (e.cf) console.error(`${e.cf}\n\n${e.message}`);
     else console.error(e.message);

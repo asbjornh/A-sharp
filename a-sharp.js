@@ -30,4 +30,4 @@ if (printTokens) print("TOKENS", lexer(source));
 const ast = parser(source);
 if (printAst) print("AST", ast);
 
-eval(ast, source, cwd);
+eval(ast, { codeFrames: true, source, cwd });

@@ -14,6 +14,8 @@ const precedence = {
   "|>": 40, ">>": 40
 };
 
+// TODO: Maybe use "op" type for calls to binary functions?
+// TODO: Maybe special parsing of |> and >> ?
 // TODO: end loc
 const parse = (source, ts) => {
   const error = msg => {
@@ -176,7 +178,7 @@ const parse = (source, ts) => {
     if (isPunc(".")) {
       skipPunc(".");
       const property = parseId();
-      return { type: "member", object: id, property };
+      return { type: "member", object: id, property, loc: id.loc };
     }
     return id;
   };
