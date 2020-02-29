@@ -2,6 +2,7 @@ const codeFrame = require("./util/code-frame");
 const environment = require("./env");
 const globals = require("./globals");
 const importModule = require("./util/import-module");
+const operators = require("./operators");
 const { arr, bool, func } = require("./util/types");
 
 function evaluate(node, opts, env, expEnv) {
@@ -30,6 +31,15 @@ function evaluate(node, opts, env, expEnv) {
       throwWithCf(node, `Type error: Unexpected '${node.type}'`);
 
     return node.value;
+  };
+
+  const evalOp = () => {
+    const fn = catchWithCf(node.callee, () =>
+      func(operators[node.callee.value])
+    );
+    const [right, left] = node.args;
+    const rApplied = catchWithCf(right, () => fn(eval(right)));
+    return left ? catchWithCf(right, () => rApplied(eval(left))) : rApplied;
   };
 
   const applyFunc = (node, args, scope) => {
@@ -81,11 +91,7 @@ function evaluate(node, opts, env, expEnv) {
       }
       return env.set(getIdName(node.left), eval(node.right));
     case "call":
-      if (node.callee.type === "id" && node.callee.value === "|>") {
-        const [call, arg] = node.args;
-        const fn = catchWithCf(call, () => func(eval(call)));
-        return catchWithCf(call, () => fn(eval(arg)));
-      }
+      if (node.callee.type === "op") return evalOp();
       return catchWithCf(node.callee, () => {
         const fn = func(eval(node.callee));
         return fn(...node.args.map(eval));

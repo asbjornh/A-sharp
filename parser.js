@@ -19,7 +19,6 @@ const mkLoc = (startNode, endNode) => ({
   end: endNode.loc.end
 });
 
-// TODO: Maybe use "op" type for calls to binary functions?
 // TODO: Maybe special parsing of |> and >> ?
 const parse = (source, ts) => {
   const error = msg => {
@@ -67,9 +66,8 @@ const parse = (source, ts) => {
       const op = ts.next();
       skipPunc(")");
       const args = parseWhile(isParam, parseAtom);
-      const callee = { ...op, type: "id" };
       const loc = mkLoc(start, args.slice(-1)[0]);
-      return { type: "call", callee, loc, args };
+      return { type: "call", callee: op, loc, args };
     }
     const node = parser();
     const end = skipPunc(")");
@@ -145,9 +143,8 @@ const parse = (source, ts) => {
       if (rightPrec > leftPrec) {
         ts.next();
         const right = maybeInfix(maybeCallOrFunc(parseAtom), rightPrec);
-        const callee = { ...tok, type: "id" };
         const loc = mkLoc(left, right);
-        const infix = { type: "call", callee, args: [right, left], loc };
+        const infix = { type: "call", callee: tok, args: [right, left], loc };
         return maybeInfix(infix, leftPrec);
       }
     }
