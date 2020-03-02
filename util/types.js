@@ -4,6 +4,7 @@ const assertType = type => value => {
   return value;
 };
 
+const str = assertType("string");
 const num = assertType("number");
 const bool = assertType("boolean");
 const func = assertType("function");
@@ -17,4 +18,4 @@ const arr = value => {
   return value;
 };
 
-module.exports = { arr, func, num, bool, nonZero };
+module.exports = { str, arr, func, num, bool, nonZero };
