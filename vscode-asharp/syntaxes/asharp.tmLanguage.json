@@ -9,6 +9,11 @@
         "2": { "name": "support.class.asharp" }
       }
     },
+    {
+      "begin": "(?<=import) (?=\\()",
+      "end": "(?<=\\))",
+      "patterns": [{ "include": "#punctuation" }, { "include": "#variables" }]
+    },
     { "include": "#keywords" },
     { "include": "#booleans" },
     {
