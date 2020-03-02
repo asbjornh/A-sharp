@@ -20,8 +20,11 @@
     },
     { "include": "#arrow-function" },
     {
-      "name": "entity.name.function.asharp",
-      "match": "(?<=(?:\\|>|>>)) ?(?![\\w-]+\\.)([\\w-]+)"
+      "match": "(?<=(?:\\|>|>>)) ?([\\w-]+\\.)?([\\w-]+)",
+      "captures": {
+        "1": { "patterns": [{ "include": "#object" }] },
+        "2": { "name": "entity.name.function.asharp" }
+      }
     },
     {
       "match": "([a-zA-Z][\\w-]*) (\\(|[\\w-\"]+[ );])",
