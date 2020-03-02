@@ -1,6 +1,5 @@
 const codeFrame = require("./util/code-frame");
 const environment = require("./env");
-const globals = require("./globals");
 const importModule = require("./util/import-module");
 const operators = require("./operators");
 const { arr, bool, func } = require("./util/types");
@@ -131,11 +130,7 @@ function evaluate(node, opts, env, expEnv) {
       return env.set(name, moduleExports);
     }
     case "program":
-      const globalEnv = environment();
-      Object.entries(globals).forEach(([name, value]) => {
-        globalEnv.set(name, value);
-      });
-      const moduleEnv = globalEnv.extend();
+      const moduleEnv = environment();
       const exportEnv = environment();
       const body = node.body.reduce(
         (_, node) => evaluate(node, opts, moduleEnv, exportEnv),
