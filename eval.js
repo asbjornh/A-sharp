@@ -68,9 +68,10 @@ function evaluate(node, opts, env, expEnv) {
     case "unit":
       return undefined;
     case "number":
-    case "string":
     case "bool":
       return node.value;
+    case "string":
+      return node.value.replace(/\\n/g, "\n");
     case "array":
       return node.elements.map(eval);
     case "array-pattern":
@@ -90,6 +91,8 @@ function evaluate(node, opts, env, expEnv) {
       }
       return env.set(getIdName(node.left), eval(node.right));
     case "call":
+      // NOTE: Set global cwd so that lib knows where the calling file lives
+      global.__asharp.cwd = opts.cwd;
       if (node.callee.type === "op") return evalOp();
       return catchWithCf(node.callee, () => {
         const fn = func(eval(node.callee));
@@ -145,6 +148,7 @@ function evaluate(node, opts, env, expEnv) {
 }
 
 function tryEvaluate(ast, { codeFrames, source, cwd }) {
+  global.__asharp = global.__asharp || {};
   try {
     return evaluate(ast, { codeFrames, source, cwd });
   } catch (e) {

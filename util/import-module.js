@@ -19,7 +19,11 @@ module.exports = function importModule(sourcePath, cwd, tryEvaluate) {
   const sourceFile = path.resolve(cwd, sourcePath);
   if (!fs.existsSync(sourceFile)) throw Error(errorMessage);
   const source = fs.readFileSync(sourceFile, "utf8");
-  const file = tryEvaluate(parse(source), { source, cwd });
+  const file = tryEvaluate(parse(source), {
+    codeFrames: true,
+    source,
+    cwd: path.dirname(sourceFile)
+  });
   if (!file || typeof file !== "object" || !file.__module)
     throw Error(`No modules exported from '${sourcePath}'`);
   return file.__module;
