@@ -5,6 +5,7 @@ const util = require("util");
 const lexer = require("./lexer");
 const parser = require("./parser");
 const eval = require("./eval");
+const generator = require("./generator");
 const generateFiles = require("./util/generate-files");
 
 const { argv } = process;
