@@ -24,22 +24,18 @@
       }
     },
     { "include": "#arrow-function" },
+    { "include": "#composition" },
     {
-      "match": "(?<=(?:\\|>|>>)) ?([\\w-]+\\.)?([\\w-]+)",
-      "captures": {
-        "1": { "patterns": [{ "include": "#object" }] },
-        "2": { "name": "entity.name.function.asharp" }
-      }
-    },
-    {
-      "match": "([a-zA-Z][\\w-]*) (\\(|[\\w-\"]+[ );])",
+      "match": "([a-zA-Z][\\w-]*) (\\(|\".*\"|[\\w-\".]+[ );\n])",
       "captures": {
         "1": { "name": "entity.name.function.asharp" },
         "2": {
           "patterns": [
+            { "include": "#variables" },
             { "include": "#arrow-function" },
             { "include": "#punctuation" },
             { "include": "#keywords" },
+            { "include": "#composition" },
             { "include": "#strings" },
             { "include": "#numbers" },
             { "include": "#booleans" }
@@ -116,6 +112,17 @@
         {
           "name": "variable.parameter.asharp",
           "match": "(([a-zA-Z-]+ )+)(?=\\=\\>)"
+        }
+      ]
+    },
+    "composition": {
+      "patterns": [
+        {
+          "match": "(?<=(?:\\|>|>>)) ?([\\w-]+\\.)?([\\w-]+)",
+          "captures": {
+            "1": { "patterns": [{ "include": "#object" }] },
+            "2": { "name": "entity.name.function.asharp" }
+          }
         }
       ]
     }
