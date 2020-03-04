@@ -82,6 +82,8 @@ module.exports = function gen(node) {
       return `{\n${properties}\n}`;
     case "member":
       return `${gen(node.object)}.${gen(node.property)}`;
+    case "property-accessor":
+      return `(obj => obj[${gen(node.key)}])`;
     case "assign":
       if (node.left.type === "array-pattern") {
         return genDestructuring(node.left, node.right);
