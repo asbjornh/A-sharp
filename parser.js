@@ -64,9 +64,9 @@ const parse = (source, ts) => {
     }
     if (isOp()) {
       const op = ts.next();
-      skipPunc(")");
+      const endParen = skipPunc(")");
       const args = parseWhile(isParam, parseAtom);
-      const loc = mkLoc(start, args.slice(-1)[0]);
+      const loc = mkLoc(start, args.slice(-1)[0] || endParen);
       return { type: "call", callee: op, loc, args };
     }
     const node = parser();

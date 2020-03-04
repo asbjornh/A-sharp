@@ -37,14 +37,16 @@ function evaluate(node, opts, env, expEnv) {
       func(operators[node.callee.value])
     );
     const [right, left] = node.args;
+    if (!right)
+      return left => right => catchWithCf(node.callee, () => fn(right)(left));
     const rApplied = catchWithCf(right, () => fn(eval(right)));
     return left ? catchWithCf(right, () => rApplied(eval(left))) : rApplied;
   };
 
-  const applyFunc = (node, args, scope) => {
+  const evalFunc = (node, args, scope) => {
     if (args.length < node.args.length) {
       return (...moreArgs) =>
-        applyFunc(node, [...args, ...moreArgs], scope.extend());
+        evalFunc(node, [...args, ...moreArgs], scope.extend());
     } else if (args.length > node.args.length) {
       throwWithCf(args.slice(-1)[0], "Too many arguments");
     }
@@ -96,10 +98,13 @@ function evaluate(node, opts, env, expEnv) {
       if (node.callee.type === "op") return evalOp();
       return catchWithCf(node.callee, () => {
         const fn = func(eval(node.callee));
-        return fn(...node.args.map(eval));
+        return node.args.reduce((acc, arg) => {
+          if (typeof acc !== "function") throwWithCf(arg, "Too many arguments");
+          return acc(eval(arg));
+        }, fn);
       });
     case "fun":
-      return (...args) => applyFunc(node, args, env.extend());
+      return (...args) => evalFunc(node, args, env.extend());
     case "ternary":
     case "if":
       return catchWithCf(node.condition, () => bool(eval(node.condition)))
