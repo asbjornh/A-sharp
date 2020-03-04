@@ -20,7 +20,6 @@ const mkLoc = (startNode, endNode) => ({
   end: endNode.loc.end
 });
 
-// TODO: Maybe special parsing of |> and >> ?
 const parse = (source, ts) => {
   const error = msg => {
     const token = ts.peek();
@@ -57,7 +56,7 @@ const parse = (source, ts) => {
     return nodes;
   };
 
-  const parseParenthesized = parser => {
+  const parseParenthesized = () => {
     const start = skipPunc("(");
     if (isPunc(")")) {
       const end = skipPunc(")");
@@ -70,15 +69,16 @@ const parse = (source, ts) => {
       const loc = mkLoc(start, args.slice(-1)[0] || endParen);
       return { type: "call", callee: op, loc, args };
     }
-    const node = parser();
-    const end = skipPunc(")");
-    return { ...node, loc: mkLoc(node, end) };
+    const sep = () => skipPunc(";");
+    const [nodes, end] = parseList(null, ")", sep, parseExpression);
+    const loc = mkLoc(start, end);
+    return nodes.length === 1 ? nodes[0] : { type: "block", body: nodes, loc };
   };
 
   const parseList = (start, stop, sepSkipper, parser) => {
     let elements = [];
     let first = true;
-    skipPunc(start);
+    if (start) skipPunc(start);
     while (!ts.eof()) {
       if (isPunc(stop)) break;
       if (first) first = false;
@@ -93,14 +93,6 @@ const parse = (source, ts) => {
     const start = ts.peek();
     const [elements, end] = parseList("[", "]", null, parseAtom);
     return { type: "array", elements, loc: mkLoc(start, end) };
-  };
-
-  const parseBlock = () => {
-    const start = ts.peek();
-    const sep = () => skipPunc(";");
-    const [body, end] = parseList("{", "}", sep, parseExpression);
-    const loc = mkLoc(start, end);
-    return body.length === 1 ? body : { type: "block", body, loc };
   };
 
   const parseIf = () => {
@@ -244,8 +236,8 @@ const parse = (source, ts) => {
   };
 
   const parseAtom = () => {
-    if (isPunc("{")) return parseBlock();
-    if (isPunc("(")) return parseParenthesized(parseExpression);
+    if (isPunc("{")) return error();
+    if (isPunc("(")) return parseParenthesized();
     if (isArray()) return parseArray();
     if (isKw("import")) return parseImport();
     if (isKw("export")) return parseDeclaration("export", "export");
