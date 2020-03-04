@@ -110,8 +110,8 @@
           }
         },
         {
-          "begin": "(?<=import) (?=\\()",
-          "end": "(?<=\\))",
+          "begin": "(?<=import) (?=\\{)",
+          "end": "(?<=\\})",
           "patterns": [
             { "include": "#punctuation" },
             { "include": "#variables" }

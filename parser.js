@@ -223,8 +223,8 @@ const parse = (source, ts) => {
 
   const parseImport = () => {
     const start = skipKw("import");
-    if (isPunc("(")) {
-      const [ids] = parseList("(", ")", null, parseId);
+    if (isPunc("{")) {
+      const [ids] = parseList("{", "}", null, parseId);
       skipKw("from");
       const source = parseStr();
       return { type: "import", ids, source, loc: mkLoc(start, source) };
