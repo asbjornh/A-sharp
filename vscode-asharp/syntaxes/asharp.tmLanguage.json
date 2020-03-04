@@ -67,7 +67,7 @@
     "composition": {
       "patterns": [
         {
-          "match": "(?<=(?:\\|>|>>)) ?([\\w-]+\\.)?([\\w-]+)(?=[ ]*;|\n||>|>>)",
+          "match": "(?<=(?:\\|>|>>|<<|<\\|)) ?([\\w-]+\\.)?([\\w-]+)[ ]*(?=;|\n|\\|>|>>|<<|<\\|)",
           "captures": {
             "1": { "patterns": [{ "include": "#object" }] },
             "2": { "name": "entity.name.function.asharp" }
@@ -79,7 +79,7 @@
       "patterns": [
         {
           "begin": "([a-zA-Z][\\w-]*)[ ]+(?=[\"a-zA-Z\\d(\\[])",
-          "end": "(?=[+/*@:;\n]|then|else)",
+          "end": "(?=[+/*@:;\n]|then|else|>>|<<|\\|>|<\\|)",
           "beginCaptures": { "1": { "name": "entity.name.function" } },
           "patterns": [
             {
