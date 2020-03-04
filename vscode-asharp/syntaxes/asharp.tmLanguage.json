@@ -85,7 +85,12 @@
         {
           "match": "(?<=(?:\\|>|>>|<<|<\\|)) ?([\\w-]+\\.)?([\\w-]+)[ ]*(?=;|\n|\\|>|>>|<<|<\\|)",
           "captures": {
-            "1": { "patterns": [{ "include": "#member-object" }] },
+            "1": {
+              "patterns": [
+                { "include": "#member-object" },
+                { "include": "#punctuation" }
+              ]
+            },
             "2": { "name": "entity.name.function.asharp" }
           }
         }
