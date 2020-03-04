@@ -23,7 +23,7 @@
       "patterns": [
         {
           "name": "punctuation.asharp",
-          "match": "[{}\\[\\]\\(\\)\\|\\?\\/\\-;=+*<>:@]"
+          "match": "[{}\\[\\]\\(\\)\\|\\?\\/\\-;%=+*<>:@]"
         }
       ]
     },
@@ -90,6 +90,7 @@
             { "include": "#booleans" },
             { "include": "#arrow-function" },
             { "include": "#keywords" },
+            { "include": "#object" },
             { "include": "#variables" },
             { "include": "#punctuation" },
             { "include": "#composition" },
