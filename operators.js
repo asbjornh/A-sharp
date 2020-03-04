@@ -8,6 +8,7 @@ module.exports = {
   "/": r => nonZero(r) && (l => num(l) / r),
   "%": r => nonZero(r) && (l => num(l) % r),
   "*": r => num(r) && (l => num(l) * r),
+  "**": r => num(r) && (l => Math.pow(num(l), r)),
   "::": r => arr(r) && (l => [l, ...r]),
   "@": r => arr(r) && (l => [...arr(l), ...r]),
   "<=": r => num(r) && (l => num(l) <= r),
@@ -19,5 +20,7 @@ module.exports = {
   "||": r => bool(r) && (l => bool(l) || r),
   "&&": r => bool(r) && (l => bool(l) && r),
   "|>": r => func(r) && (l => r(l)),
-  ">>": r => func(r) && (l => (...args) => r(func(l)(...args)))
+  "<|": r => l => func(l)(r),
+  ">>": r => func(r) && (l => (...args) => r(func(l)(...args))),
+  "<<": r => func(r) && (l => (...args) => func(l)(r(...args)))
 };
