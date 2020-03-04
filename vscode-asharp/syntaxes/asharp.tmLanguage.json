@@ -1,58 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "A#",
-  "patterns": [
-    {
-      "match": "(import) ([a-zA-Z-]+)",
-      "captures": {
-        "1": { "patterns": [{ "include": "#keywords" }] },
-        "2": { "name": "support.class.asharp" }
-      }
-    },
-    {
-      "begin": "(?<=import) (?=\\()",
-      "end": "(?<=\\))",
-      "patterns": [{ "include": "#punctuation" }, { "include": "#variables" }]
-    },
-    { "include": "#keywords" },
-    { "include": "#booleans" },
-    {
-      "match": "(?<=let|export) ([a-zA-Z][\\w-]*)(( [a-zA-Z][\\w-]*)+)",
-      "captures": {
-        "1": { "name": "entity.name.function.asharp" },
-        "2": { "name": "variable.parameter.asharp" }
-      }
-    },
-    { "include": "#arrow-function" },
-    { "include": "#composition" },
-    {
-      "match": "([a-zA-Z][\\w-]*) (\\(|\".*\"|[-\".\\w]+[ );\n])",
-      "captures": {
-        "1": { "name": "entity.name.function.asharp" },
-        "2": {
-          "patterns": [
-            { "include": "#variables" },
-            { "include": "#arrow-function" },
-            { "include": "#punctuation" },
-            { "include": "#keywords" },
-            { "include": "#composition" },
-            { "include": "#strings" },
-            { "include": "#numbers" },
-            { "include": "#booleans" }
-          ]
-        }
-      }
-    },
-    {
-      "name": "comment.asharp",
-      "match": "\\/\\/.+"
-    },
-    { "include": "#object" },
-    { "include": "#variables" },
-    { "include": "#punctuation" },
-    { "include": "#strings" },
-    { "include": "#numbers" }
-  ],
+  "patterns": [{ "include": "#program" }],
   "repository": {
     "object": {
       "patterns": [
@@ -118,12 +67,76 @@
     "composition": {
       "patterns": [
         {
-          "match": "(?<=(?:\\|>|>>)) ?([\\w-]+\\.)?([\\w-]+)",
+          "match": "(?<=(?:\\|>|>>)) ?([\\w-]+\\.)?([\\w-]+)(?=[ ]*;|\n||>|>>)",
           "captures": {
             "1": { "patterns": [{ "include": "#object" }] },
             "2": { "name": "entity.name.function.asharp" }
           }
         }
+      ]
+    },
+    "call": {
+      "patterns": [
+        {
+          "begin": "([a-zA-Z][\\w-]*)[ ]+(?=[\"a-zA-Z\\d(\\[])",
+          "end": "(?=[+/*@:;\n]|then|else)",
+          "beginCaptures": { "1": { "name": "entity.name.function" } },
+          "patterns": [
+            {
+              "begin": "(?=\\()",
+              "end": "(?=\\))",
+              "patterns": [{ "include": "#program" }]
+            },
+            { "include": "#booleans" },
+            { "include": "#arrow-function" },
+            { "include": "#keywords" },
+            { "include": "#variables" },
+            { "include": "#punctuation" },
+            { "include": "#composition" },
+            { "include": "#strings" },
+            { "include": "#numbers" }
+          ]
+        }
+      ]
+    },
+    "program": {
+      "patterns": [
+        {
+          "match": "(import) ([a-zA-Z-]+)",
+          "captures": {
+            "1": { "patterns": [{ "include": "#keywords" }] },
+            "2": { "name": "support.class.asharp" }
+          }
+        },
+        {
+          "begin": "(?<=import) (?=\\()",
+          "end": "(?<=\\))",
+          "patterns": [
+            { "include": "#punctuation" },
+            { "include": "#variables" }
+          ]
+        },
+        { "include": "#keywords" },
+        { "include": "#booleans" },
+        {
+          "match": "(?<=let|export) ([a-zA-Z][\\w-]*)(( [a-zA-Z][\\w-]*)+)",
+          "captures": {
+            "1": { "name": "entity.name.function.asharp" },
+            "2": { "name": "variable.parameter.asharp" }
+          }
+        },
+        { "include": "#arrow-function" },
+        { "include": "#composition" },
+        { "include": "#call" },
+        {
+          "name": "comment.asharp",
+          "match": "\\/\\/.+"
+        },
+        { "include": "#object" },
+        { "include": "#variables" },
+        { "include": "#punctuation" },
+        { "include": "#strings" },
+        { "include": "#numbers" }
       ]
     }
   },
