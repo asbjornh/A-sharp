@@ -1,6 +1,12 @@
+const realType = value => {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return "array";
+  return typeof value;
+};
+
 const assertType = type => value => {
-  if (typeof value !== type)
-    throw Error(`Type error: Expected '${type}' but got '${typeof value}'`);
+  if (realType(value) !== type)
+    throw Error(`Type error: Expected '${type}' but got '${realType(value)}'`);
   return value;
 };
 
@@ -12,10 +18,7 @@ const nonZero = value => {
   if (num === 0) throw Error(`Division by zero`);
   return num(value);
 };
-const arr = value => {
-  if (!Array.isArray(value))
-    throw Error(`Type error: Expected 'array' but got '${typeof value}'`);
-  return value;
-};
+const arr = assertType("array");
+const obj = assertType("object");
 
-module.exports = { str, arr, func, num, bool, nonZero };
+module.exports = { str, arr, func, num, bool, nonZero, obj };

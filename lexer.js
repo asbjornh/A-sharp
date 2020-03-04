@@ -19,7 +19,7 @@ const operators = [
   "<=", ">=", "!=", "==", "||", "&&",
   "<", ">", "=", "+", "-", "/", "%", "*", "**"
 ];
-const punctuation = "()[]{};?:.";
+const punctuation = "()[]{};?:._";
 
 const isId = str => str && /^[a-zA-Z-]*$/.test(str);
 const isKw = str => str && keywords.includes(str);

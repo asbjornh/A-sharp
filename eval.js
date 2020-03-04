@@ -2,7 +2,7 @@ const codeFrame = require("./util/code-frame");
 const environment = require("./env");
 const importModule = require("./util/import-module");
 const operators = require("./operators");
-const { arr, bool, func } = require("./util/types");
+const { arr, bool, func, obj } = require("./util/types");
 
 function evaluate(node, opts, env, expEnv) {
   const eval = node => evaluate(node, opts, env);
@@ -91,6 +91,14 @@ function evaluate(node, opts, env, expEnv) {
       if (property in object) return object[property];
       throwWithCf(node.property, `'${property}' is not defined.`);
     }
+    case "property-accessor":
+      return object => {
+        const key = getIdName(node.key);
+        return (
+          obj(object)[key] ||
+          throwWithCf(node.key, `Property '${key}' does not exist on object.`)
+        );
+      };
     case "assign":
       if (node.left.type === "array-pattern") {
         return evalDestructuring(node.left, node.right);

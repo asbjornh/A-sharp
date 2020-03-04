@@ -39,7 +39,13 @@ const parse = (source, ts) => {
   const isBool = () => isKw("true") || isKw("false");
   const isArray = () => isPunc("[");
   const isParam = () =>
-    isId() || isNum() || isStr() || isBool() || isArray() || isPunc("(");
+    isId() ||
+    isNum() ||
+    isStr() ||
+    isBool() ||
+    isArray() ||
+    isPunc("(") ||
+    isPunc("_");
 
   const skipType = pred => value =>
     pred(value)
@@ -106,6 +112,14 @@ const parse = (source, ts) => {
     }
     const end = skipPunc("}");
     return { type: "object", properties, loc: mkLoc(start, end) };
+  };
+
+  const parsePropertyAccessor = () => {
+    const start = skipPunc("_");
+    skipPunc(".");
+    const key = parseId();
+    const loc = mkLoc(start, key);
+    return { type: "property-accessor", key, loc };
   };
 
   const parseIf = () => {
@@ -251,6 +265,7 @@ const parse = (source, ts) => {
   const parseAtom = () => {
     if (isPunc("{")) return parseObject();
     if (isPunc("(")) return parseParenthesized();
+    if (isPunc("_")) return parsePropertyAccessor();
     if (isArray()) return parseArray();
     if (isKw("import")) return parseImport();
     if (isKw("export")) return parseDeclaration("export", "export");
