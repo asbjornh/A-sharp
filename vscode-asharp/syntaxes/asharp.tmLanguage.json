@@ -6,6 +6,22 @@
     "object": {
       "patterns": [
         {
+          "begin": "({)",
+          "end": "(})",
+          "captures": { "1": { "name": "punctuation.asharp" } },
+          "patterns": [
+            { "include": "#variables" },
+            { "include": "#object" },
+            { "include": "#punctuation" },
+            { "include": "#strings" },
+            { "include": "#numbers" }
+          ]
+        }
+      ]
+    },
+    "member-object": {
+      "patterns": [
+        {
           "name": "support.class",
           "match": "[a-zA-Z-]+(?=\\.)"
         }
@@ -69,7 +85,7 @@
         {
           "match": "(?<=(?:\\|>|>>|<<|<\\|)) ?([\\w-]+\\.)?([\\w-]+)[ ]*(?=;|\n|\\|>|>>|<<|<\\|)",
           "captures": {
-            "1": { "patterns": [{ "include": "#object" }] },
+            "1": { "patterns": [{ "include": "#member-object" }] },
             "2": { "name": "entity.name.function.asharp" }
           }
         }
@@ -90,7 +106,7 @@
             { "include": "#booleans" },
             { "include": "#arrow-function" },
             { "include": "#keywords" },
-            { "include": "#object" },
+            { "include": "#member-object" },
             { "include": "#variables" },
             { "include": "#punctuation" },
             { "include": "#composition" },
@@ -134,6 +150,7 @@
           "match": "\\/\\/.+"
         },
         { "include": "#object" },
+        { "include": "#member-object" },
         { "include": "#variables" },
         { "include": "#punctuation" },
         { "include": "#strings" },

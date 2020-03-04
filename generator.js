@@ -75,6 +75,11 @@ module.exports = function gen(node) {
       return `[${node.elements.map(gen).join(", ")}]`;
     case "array-pattern":
       return node.elements.map(gen);
+    case "object":
+      const properties = node.properties
+        .map(({ key, value }) => `${gen(key)}: ${gen(value)}`)
+        .join(",\n");
+      return `{\n${properties}\n}`;
     case "member":
       return `${gen(node.object)}.${gen(node.property)}`;
     case "assign":

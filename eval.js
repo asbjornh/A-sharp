@@ -80,6 +80,10 @@ function evaluate(node, opts, env, expEnv) {
       return node.elements.map(getIdName);
     case "id":
       return catchWithCf(node, () => env.get(node.value));
+    case "object":
+      return Object.fromEntries(
+        node.properties.map(({ key, value }) => [getIdName(key), eval(value)])
+      );
     case "member": {
       const objectName = getIdName(node.object);
       const property = getIdName(node.property);

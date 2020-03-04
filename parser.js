@@ -95,6 +95,19 @@ const parse = (source, ts) => {
     return { type: "array", elements, loc: mkLoc(start, end) };
   };
 
+  const parseObject = () => {
+    const start = skipPunc("{");
+    let properties = [];
+    while (!ts.eof()) {
+      if (isPunc("}")) break;
+      const key = parseId();
+      const value = parseAtom();
+      properties.push({ key, value });
+    }
+    const end = skipPunc("}");
+    return { type: "object", properties, loc: mkLoc(start, end) };
+  };
+
   const parseIf = () => {
     const start = skipKw("if");
     const condition = parseExpression();
@@ -236,7 +249,7 @@ const parse = (source, ts) => {
   };
 
   const parseAtom = () => {
-    if (isPunc("{")) return error();
+    if (isPunc("{")) return parseObject();
     if (isPunc("(")) return parseParenthesized();
     if (isArray()) return parseArray();
     if (isKw("import")) return parseImport();
