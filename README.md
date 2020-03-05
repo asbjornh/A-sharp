@@ -7,7 +7,7 @@ There is a very simple core library (`io`, `list` and `string`) that probably la
 ## Highlights
 
 - identifiers are `kebab-case` ❤️. Everyone should do this. Seriously.
-- list without separators `[1 2 3]`
+- lists without separators `[1 2 3]`
 - objects without separators `{ name "John" }`
 
 ## Prerequisites
