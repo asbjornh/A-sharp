@@ -23,7 +23,8 @@ const punctuation = "()[]{};?:._";
 
 const isId = str => str && /^[a-zA-Z-]*$/.test(str);
 const isKw = str => str && keywords.includes(str);
-const isNum = str => str && /^\d+$/.test(str);
+const isNum = str => str && /^\d+(.\d+)?$/.test(str);
+const isNumPart = str => str && /^[\d.]$/.test(str);
 const isOp = str => str && operators.includes(str);
 const isPunc = str => str && punctuation.includes(str);
 const isString = str => str && /^".*"$/.test(str);
@@ -48,7 +49,7 @@ const reducer = ([tokens, stack, line, col], char, index, input) => {
   if (isPunc(stack)) return consumeStack("punc");
   if (isKw(stack) && !isId(char)) return consumeStack("kw");
   if (isId(stack) && !isId(char)) return consumeStack("id");
-  if (isNum(stack) && !isNum(char)) return consumeStack("number");
+  if (isNum(stack) && !isNumPart(char)) return consumeStack("number");
   if (isString(stack) && !isString(char))
     return consumeStack("string", stack.replace(/"/g, ""));
 

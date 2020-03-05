@@ -191,12 +191,6 @@ const parse = (source, ts) => {
 
   const parseNum = () => {
     const num = ts.next();
-    if (isPunc(".")) {
-      skipPunc(".");
-      const dec = isNum() ? ts.next() : error();
-      const loc = mkLoc(num, dec);
-      return { ...num, value: parseFloat(`${num.value}.${dec.value}`), loc };
-    }
     return { ...num, value: parseFloat(num.value) };
   };
 
