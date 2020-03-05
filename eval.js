@@ -66,6 +66,11 @@ function evaluate(node, opts, env, expEnv) {
     }, values);
   };
 
+  const getMemberKeys = ({ object, property }) => {
+    if (object.type === "id") return [getIdName(object), getIdName(property)];
+    return [...getMemberKeys(object), getIdName(property)];
+  };
+
   switch (node.type) {
     case "unit":
       return undefined;
@@ -92,11 +97,14 @@ function evaluate(node, opts, env, expEnv) {
     }
     case "property-accessor":
       return object => {
-        const key = getIdName(node.key);
-        return (
-          obj(object)[key] ||
-          throwWithCf(node.key, `Property '${key}' does not exist on object.`)
-        );
+        const keys =
+          node.key.type === "id"
+            ? [getIdName(node.key)]
+            : getMemberKeys(node.key);
+        return keys.reduce((acc, key) => {
+          if (key in acc) return acc[key];
+          throwWithCf(node.key, `Property '${key}' does not exist on object.`);
+        }, obj(object));
       };
     case "assign":
       if (node.left.type === "array-pattern") {

@@ -118,7 +118,8 @@ const parse = (source, ts) => {
   const parsePropertyAccessor = () => {
     const start = skipPunc("_");
     skipPunc(".");
-    const key = parseId();
+    const id = parseId();
+    const key = isPunc(".") ? parseMember(id) : id;
     const loc = mkLoc(start, key);
     return { type: "property-accessor", key, loc };
   };
@@ -206,8 +207,8 @@ const parse = (source, ts) => {
   const parseStr = () => (isStr() ? ts.next() : error());
 
   const parseMember = object => {
-      skipPunc(".");
-      const property = parseId();
+    skipPunc(".");
+    const property = parseId();
     const loc = mkLoc(object, property);
     const node = { type: "member", object, property, loc };
     return isPunc(".") ? parseMember(node) : node;
