@@ -22,13 +22,17 @@ node a-sharp.js <file-name> [options]
 
 Without options this will compile an A# file to JavaScript and output the result in the shell.
 
-### Options
+### CLI Options
 
 - `--out <dir-name>` Compile a file and its dependencies, put everything in `<dir-name>`
 - `--eval` Evaluate a file
 - `--ast` Print the AST
 - `--tokens` Print the tokens
 - `--source` Print the source code
+
+### VS Code Syntax highlighting
+
+To enable syntax colors, symlink the `asharp-vscode` folder to you VS Code extensions folder. Syntax highlighting is enabled for files with the `.asharp` extension.
 
 ## Examples
 
