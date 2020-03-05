@@ -61,17 +61,17 @@ export my-func a b = a - b;
 
 #### Assignment
 
-```fs
+```js
 let a = 1;
 ```
 
 #### Function definition
 
-```fs
+```js
 let add a b = a + b;
 let add = (a b => a + b);
 
-// Multi expression:
+// With multiple expressions:
 let make-something a b = (
   let something = a + b;
   something + 3; // The last expression is returned
@@ -80,7 +80,7 @@ let make-something a b = (
 
 #### Function application
 
-```fs
+```js
 let three = add 1 2;
 
 let add-two = add 2;
@@ -89,7 +89,7 @@ let four = add-two 2;
 
 #### Lists
 
-```fs
+```js
 let numers = [1 2 3 4];
 let strings = ["one" "two" "three"];
 ```
@@ -109,7 +109,7 @@ let person = {
 
 #### Object property access
 
-```fs
+```js
 let name = person.name;
 
 let get-names = list.map _.name;
@@ -140,18 +140,18 @@ let add-one-and-sum =
 Operators can be partially applied using parenthesized prefix notation (`(+)`, `(-) 1`, `(/) 2` etc). When partially applying operators, the arguments are given in reverse (`(/) 2 1` is equivalent to `1 / 2`)
 
 ```fs
-+ // Addition
-- // Subtraction
-/ // Division
-% // Modulus
-* // Multiplication
++  // Addition
+-  // Subtraction
+/  // Division
+%  // Modulus
+*  // Multiplication
 ** // Exponentiation (power)
 :: // Cons (prepend element to list)
-@ // Concat
+@  // Concat
 <= // Less than or equal
 >= // Greater than or equal
-< // Less than
-> // Greater than
+<  // Less than
+>  // Greater than
 == // Equals
 != // Not equals
 || // Or
