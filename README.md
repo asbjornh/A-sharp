@@ -126,7 +126,7 @@ let name = person.name;
 
 let get-names = list.map _.name;
 // The above is syntax sugar for:
-let get-names = list.map (user => user.name)
+let get-names = list.map (user => user.name);
 ```
 
 #### Control flow
@@ -148,17 +148,17 @@ something == 2 ? "yes" : "false";
 ```js
 [1 2 3 4]
   |> list.map <| (+) 1
-  |> list.reduce (+)
+  |> list.reduce (+);
 ```
 
 #### Composition
 
 ```js
 let add-one-and-sum =
-  list.map ((+) 1) >> list.reduce (+)
+  list.map ((+) 1) >> list.reduce (+);
 
 let add-one-and-sum =
-  list.reduce (+) << list.map ((+) 1)
+  list.reduce (+) << list.map ((+) 1);
 ```
 
 #### Operators
