@@ -10,12 +10,6 @@ There is a very simple core library (`io`, `list` and `string`) that probably la
 - list without separators `[1 2 3]`
 - objects without separators `{ name "John" }`
 
-## Examples
-
-![a-sharp-list](https://user-images.githubusercontent.com/13281350/76029538-f4e7ee00-5f34-11ea-86b2-361ee822857b.png)
-![a-sharp-object](https://user-images.githubusercontent.com/13281350/76029542-f6b1b180-5f34-11ea-95a3-84f220ba2e89.png)
-![a-sharp-string](https://user-images.githubusercontent.com/13281350/76029545-f74a4800-5f34-11ea-9973-8c4ebf8a9e8d.png)
-
 ## Prerequisites
 
 - Node.js
@@ -30,8 +24,14 @@ Without options this will compile an A# file to JavaScript and output the result
 
 ### Options
 
-`--out <dir-name>` Compile a file and its dependencies, put everything in `<dir-name>`
-`--eval` Evaluate a file
-`--ast` Print the AST
-`--tokens` Print the tokens
-`--source` Print the source code
+- `--out <dir-name>` Compile a file and its dependencies, put everything in `<dir-name>`
+- `--eval` Evaluate a file
+- `--ast` Print the AST
+- `--tokens` Print the tokens
+- `--source` Print the source code
+
+## Examples
+
+![a-sharp-list](https://user-images.githubusercontent.com/13281350/76029538-f4e7ee00-5f34-11ea-86b2-361ee822857b.png)
+![a-sharp-object](https://user-images.githubusercontent.com/13281350/76029542-f6b1b180-5f34-11ea-95a3-84f220ba2e89.png)
+![a-sharp-string](https://user-images.githubusercontent.com/13281350/76029545-f74a4800-5f34-11ea-9973-8c4ebf8a9e8d.png)
