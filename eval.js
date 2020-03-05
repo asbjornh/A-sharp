@@ -85,9 +85,8 @@ function evaluate(node, opts, env, expEnv) {
         node.properties.map(({ key, value }) => [getIdName(key), eval(value)])
       );
     case "member": {
-      const objectName = getIdName(node.object);
+      const object = catchWithCf(node.object, () => eval(node.object));
       const property = getIdName(node.property);
-      const object = catchWithCf(node.object, () => env.get(objectName));
       if (property in object) return object[property];
       throwWithCf(node.property, `'${property}' is not defined.`);
     }

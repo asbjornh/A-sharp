@@ -205,14 +205,17 @@ const parse = (source, ts) => {
   const parseId = () => (isId() ? ts.next() : error());
   const parseStr = () => (isStr() ? ts.next() : error());
 
-  const parseIdOrMember = () => {
-    const id = parseId();
-    if (isPunc(".")) {
+  const parseMember = object => {
       skipPunc(".");
       const property = parseId();
-      const loc = mkLoc(id, property);
-      return { type: "member", object: id, property, loc };
-    }
+    const loc = mkLoc(object, property);
+    const node = { type: "member", object, property, loc };
+    return isPunc(".") ? parseMember(node) : node;
+  };
+
+  const parseIdOrMember = () => {
+    const id = parseId();
+    if (isPunc(".")) return parseMember(id);
     return id;
   };
 
