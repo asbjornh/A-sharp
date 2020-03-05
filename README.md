@@ -32,7 +32,7 @@ Without options this will compile an A# file to JavaScript and output the result
 
 ### VS Code Syntax highlighting
 
-To enable syntax colors, symlink the `asharp-vscode` folder to you VS Code extensions folder. Syntax highlighting is enabled for files with the `.asharp` extension.
+To enable syntax colors, symlink the `vscode-asharp` folder to you VS Code extensions folder. Syntax highlighting is enabled for files with the `.asharp` extension.
 
 ## Examples
 
