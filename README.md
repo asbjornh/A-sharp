@@ -36,9 +36,6 @@ To enable syntax colors, symlink the `vscode-asharp` folder to you VS Code exten
 
 ## Examples
 
-<img src="https://user-images.githubusercontent.com/13281350/76029538-f4e7ee00-5f34-11ea-86b2-361ee822857b.png" width="50%" />
-<img src="https://user-images.githubusercontent.com/13281350/76029542-f6b1b180-5f34-11ea-95a3-84f220ba2e89.png" width="50%" />
-
 ![a-sharp-list](https://user-images.githubusercontent.com/13281350/76029538-f4e7ee00-5f34-11ea-86b2-361ee822857b.png)
 ![a-sharp-object](https://user-images.githubusercontent.com/13281350/76029542-f6b1b180-5f34-11ea-95a3-84f220ba2e89.png)
 ![a-sharp-string](https://user-images.githubusercontent.com/13281350/76029545-f74a4800-5f34-11ea-9973-8c4ebf8a9e8d.png)
