@@ -92,6 +92,14 @@ let four = add-two 2;
 ```js
 let numers = [1 2 3 4];
 let strings = ["one" "two" "three"];
+let expressions = [(add 1) (add 2)];
+
+// Destructuring
+let (first :: rest) = numbers;
+
+// Structural equality
+[] == [];
+[1 2] == [1 2];
 ```
 
 #### Objects
@@ -105,6 +113,10 @@ let person = {
     people false
   }
 };
+
+// Structural equality
+{} == {};
+{ a 1 } == { a 1 };
 ```
 
 #### Object property access
@@ -115,6 +127,20 @@ let name = person.name;
 let get-names = list.map _.name;
 // The above is syntax sugar for:
 let get-names = list.map (user => user.name)
+```
+
+#### Control flow
+
+```fs
+// If-expression
+if something == 2
+then "yes"
+else if something == 3
+  then "YES"
+  else "no";
+
+// Ternary-expression
+something == 2 ? "yes" : "false";
 ```
 
 #### Pipelines
