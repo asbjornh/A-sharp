@@ -31,7 +31,8 @@ const parse = (source, ts) => {
     !ts.eof() && type === token.type && (!value || value === token.value);
   const isKw = str => is("kw", str);
   const isId = token => is("id", undefined, token);
-  const isMember = token => is("member", undefined, token);
+  const isMember = node => is("member", undefined, node);
+  const isCall = node => is("call", undefined, node);
   const isPunc = str => is("punc", str);
   const isOp = str => is("op", str);
   const isNum = () => is("number");
@@ -173,7 +174,8 @@ const parse = (source, ts) => {
 
   const maybeCallOrFunc = exprParser => {
     const expr = exprParser();
-    return (isId(expr) || isMember(expr)) && (isParam() || isOp("=>"))
+    return (isId(expr) || isMember(expr) || isCall(expr)) &&
+      (isParam() || isOp("=>"))
       ? parseCallOrFunc(expr)
       : expr;
   };
@@ -185,7 +187,7 @@ const parse = (source, ts) => {
       const body = parseExpression();
       return { type: "fun", args: [id, ...args], body, loc: mkLoc(id, body) };
     }
-    const loc = mkLoc(id, args.slice(-1)[0]);
+    const loc = mkLoc(id, args.slice(-1)[0] || id);
     return { type: "call", callee: id, loc, args };
   };
 
