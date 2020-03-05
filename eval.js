@@ -137,9 +137,11 @@ function evaluate(node, opts, env, expEnv) {
         importModule(eval(node.source), opts.cwd, tryEvaluate)
       );
       return node.ids.forEach(id => {
-        const name = getIdName(id);
-        if (name in moduleExports) return env.set(name, moduleExports[name]);
-        else throwWithCf(id, `No export named '${name}'`);
+        catchWithCf(id, () => {
+          const name = getIdName(id);
+          if (name in moduleExports) return env.set(name, moduleExports[name]);
+          else throwWithCf(id, `No export named '${name}'`);
+        });
       });
     }
     case "import-all": {
@@ -147,7 +149,7 @@ function evaluate(node, opts, env, expEnv) {
       const moduleExports = catchWithCf(node.source, () =>
         importModule(eval(node.source), opts.cwd, tryEvaluate)
       );
-      return env.set(name, moduleExports);
+      return catchWithCf(node.id, () => env.set(name, moduleExports));
     }
     case "program":
       const moduleEnv = environment();
