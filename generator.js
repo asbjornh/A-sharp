@@ -44,7 +44,9 @@ module.exports = function gen(node) {
     const op = gen(node.callee);
     return left
       ? operators[op](left, right)
-      : `(x => ${operators[op]("x", right)})`;
+      : right
+      ? `(x => ${operators[op]("x", right)})`
+      : `((x, y) => ${operators[op]("x", "y")})`;
   };
 
   const generateFunc = node => {
