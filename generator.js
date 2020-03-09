@@ -1,3 +1,9 @@
+let count = 0;
+const uniqueName = prefix => {
+  count++;
+  return `${prefix}${String(count)}`;
+};
+
 const emptyCompare = (thing1, thing2, operator) => {
   if (thing1 === "[]") return `${thing2}.length ${operator} 0`;
   if (thing2 === "[]") return `${thing1}.length ${operator} 0`;
@@ -22,8 +28,14 @@ const operators = {
   "&&": (l, r) => `${l} && ${r}`,
   "|>": (l, r) => `${r}(${l})`,
   "<|": (l, r) => `${l}(${r})`,
-  ">>": (l, r) => `(...args) => ${r}(${l}(...args))`,
-  "<<": (l, r) => `(...args) => ${l}(${r}(...args))`
+  ">>": (l, r) => {
+    const args = uniqueName("args");
+    return `(...${args}) => ${r}(${l}(...${args}))`;
+  },
+  "<<": (l, r) => {
+    const args = uniqueName("args");
+    return `(...${args}) => ${l}(${r}(...${args}))`;
+  }
 };
 
 module.exports = function gen(node) {
