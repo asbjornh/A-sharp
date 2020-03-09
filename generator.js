@@ -1,3 +1,5 @@
+// TODO: File system operations currently have no context to use for path resolution.
+
 let count = 0;
 const uniqueName = prefix => {
   count++;
