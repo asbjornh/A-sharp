@@ -79,10 +79,11 @@ module.exports = function gen(node) {
     case "unit":
       return "()";
     case "number":
-    case "string":
     case "bool":
     case "op":
       return node.value;
+    case "string":
+      return `"${node.value}"`;
     case "id":
       return node.value.replace(/-/g, "_");
     case "array":
@@ -133,7 +134,7 @@ module.exports = function gen(node) {
       const code = node.body.map(gen).join(";\n") + ";\n";
       const dependencies = node.body
         .filter(({ type }) => type === "import" || type === "import-all")
-        .map(({ source }) => gen(source));
+        .map(({ source }) => source.value);
       return { code, dependencies };
     default:
       throw Error(`Eval: Missing implementation for '${node.type}'`);
