@@ -33,29 +33,40 @@ const writeDependencies = (dependencies, cwd, outPath, libPath) => {
     });
 };
 
+const libPath = path.resolve(__dirname, "../lib");
+const libDependencies = fs
+  .readdirSync(libPath)
+  .filter(
+    file =>
+      file.endsWith(".js") &&
+      file !== "index.js" &&
+      !lib[file.replace(".js", "")]
+  )
+  .map(file => path.resolve(libPath, file));
+
 module.exports = (ast, cwd, inPath, outPath) => {
   const { code, dependencies } = generator(ast);
 
-  const libPath = path.join(outPath, "asharp-lib");
+  const libOutPath = path.join(outPath, "asharp-lib");
   const fileName = path.basename(inPath, ".asharp") + ".js";
   try {
     fs.mkdirSync(outPath);
   } catch {}
   try {
-    fs.mkdirSync(libPath);
+    fs.mkdirSync(libOutPath);
   } catch {}
 
   fs.writeFileSync(path.join(outPath, fileName), code);
   Object.entries(lib).forEach(([name, source]) => {
-    const filePath = path.join(libPath, `${name}.js`);
+    const filePath = path.join(libOutPath, `${name}.js`);
     if (typeof source === "object")
-      fs.copyFileSync(
-        path.resolve(__dirname, "../lib", `${name}.js`),
-        filePath
-      );
+      fs.copyFileSync(path.resolve(libPath, `${name}.js`), filePath);
     if (typeof source === "string") {
       fs.writeFileSync(filePath, generator(parser(source)).code);
     }
   });
-  writeDependencies(dependencies, cwd, outPath, libPath);
+  libDependencies.forEach(srcPath => {
+    fs.copyFileSync(srcPath, path.resolve(libOutPath, path.basename(srcPath)));
+  });
+  writeDependencies(dependencies, cwd, outPath, libOutPath);
 };

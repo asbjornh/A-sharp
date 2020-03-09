@@ -1,5 +1,5 @@
 const deepEq = require("./util/deep-equal");
-const { func, num, bool, arr, nonZero } = require("./util/types");
+const { func, num, bool, arr, nonZero } = require("./lib/types");
 
 // NOTE: Does type checking also while partially applied
 module.exports = {

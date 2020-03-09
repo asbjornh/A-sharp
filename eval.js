@@ -2,7 +2,7 @@ const codeFrame = require("./util/code-frame");
 const environment = require("./env");
 const importModule = require("./util/import-module");
 const operators = require("./operators");
-const { arr, bool, func, obj } = require("./util/types");
+const { arr, bool, func, obj } = require("./lib/types");
 
 function evaluate(node, opts, env, expEnv) {
   const eval = node => evaluate(node, opts, env);
