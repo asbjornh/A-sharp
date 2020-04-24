@@ -1,12 +1,16 @@
 <h1>A#</h1>
 
-A dynamically typed functional programming language that I made to learn about compilers and interpreters. It's inspired by F#, JavaScript and Lisp and compiles to JavaScript or runs in a Node.js interpreter.
+A tiny dynamically typed functional programming language that I made while learning about compilers and interpreters. It's inspired by F#, JavaScript and Lisp and compiles to JavaScript or runs in a Node.js interpreter.
 
-There is a very simple core library (`io`, `list` and `string`) that probably lacks what one would need for a real world app.
+There is a very simple core library (`io`, `list` and `string`).
+
+## Should I use A#?
+
+No. I don't even use it. If you think it looks interesting, try F#!
 
 ## Highlights
 
-- identifiers are `kebab-case` ❤️. Everyone should do this. Seriously.
+- `kebab-case` identifiers!
 - lists without separators `[1 2 3]`
 - objects without separators `{ name "John" }`
 
